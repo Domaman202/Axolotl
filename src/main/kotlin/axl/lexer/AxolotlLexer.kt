@@ -1,9 +1,8 @@
 package axl.lexer
 
 import axl.File
+import axl.getLine
 import axl.lexer.impl.IAxolotlLexer
-import axl.utils.mutableListToImmutableList
-import axl.utils.mutableSetToImmutableSet
 
 class AxolotlLexer(val file: File) : IAxolotlLexer {
 
@@ -13,48 +12,50 @@ class AxolotlLexer(val file: File) : IAxolotlLexer {
 
     private var column: Int = 1
 
-    private val keywords: Set<AxolotlKeyword> = mutableSetOf()
+    private val keywords: MutableSet<AxolotlKeyword> = mutableSetOf()
 
-    private val operators: Set<AxolotlOperator> = mutableSetOf()
+    private val operators: MutableSet<AxolotlOperator> = mutableSetOf()
 
-    private val tokens: List<AxolotlToken> = mutableListOf()
+    private val tokens: MutableList<AxolotlToken> = mutableListOf()
+
+    private var lastToken: AxolotlToken? = null
 
     fun add(keyword: AxolotlKeyword) {
         if (keyword in keywords)
             throw IllegalArgumentException("The keyword \"${keyword.value}\" is already in the lexer.")
 
-        if (keywords !is MutableSet)
+        if (confirm)
             throw IllegalStateException("You cannot add keywords after confirming the lexer.")
 
-        keywords += keyword
+        keywords.add(keyword)
     }
 
     fun add(operator: AxolotlOperator) {
         if (operator in operators)
             throw IllegalArgumentException("The keyword \"${operator.value}\" is already in the lexer.")
 
-        if (operators !is MutableSet)
+        if (confirm)
             throw IllegalStateException("You cannot add operators after confirming the lexer.")
 
         operators += operator
     }
 
+    private var confirm = false
+
     private fun confirm() {
-        mutableSetToImmutableSet(keywords)
-        mutableSetToImmutableSet(operators)
+        confirm = true
     }
 
     // process
 
     private fun next(): Char {
-        if (offset >= file.content.length - 1)
+        if (offset >= file.content.length)
             throw IllegalStateException("The file is over.")
 
-        offset++
-        val char = file.content[offset]
+        val char = file.content[offset++]
         if (char == '\n') {
             row++
-            column = 0
+            column = 1
         } else {
             column++
         }
@@ -69,7 +70,7 @@ class AxolotlLexer(val file: File) : IAxolotlLexer {
         val char = file.content[offset]
         if (char == '\n') {
             row--
-            column = 0
+            column = 1
             var i = offset - 1
             while (i >= 0 && file.content[i] != '\n') {
                 column++
@@ -81,7 +82,15 @@ class AxolotlLexer(val file: File) : IAxolotlLexer {
         return char
     }
 
-    private fun get(): Char = if (offset >= file.content.length || offset < 0) throw IllegalStateException("The file is over.") else file.content[offset]
+    private fun get(): Char {
+        if (offset >= file.content.length) {
+            if (offset == file.content.length)
+                return file.content[offset-1]
+            throw IllegalStateException("The file is over.")
+        }
+
+        return file.content[offset]
+    }
 
     private fun end(): Boolean = offset >= file.content.length
 
@@ -94,73 +103,57 @@ class AxolotlLexer(val file: File) : IAxolotlLexer {
     override fun tokenize() {
         if (tokens.isNotEmpty())
             throw IllegalStateException("The lexer has already been launched before.")
-
-        tokens as MutableList
+        confirm()
 
         while (!end()) {
             if (get() == ' ' || get() == '\n' || get() == '\r' || get() == '\t') {
                 skip()
-                if (end()) {
-                    mutableListToImmutableList(tokens)
+                if (end())
                     return
-                }
             }
 
             val row: Int = row
             val column: Int = column
+            val token: AxolotlToken =
+                if (get().isDigit() || get() == '.' || get() == '-')
+                    number()
+                else if (get().isLetter() || get() == '_')
+                    keywordOrIdentify()
+                else if (get() == '"')
+                    string()
+                else if (get() == '\'')
+                    character()
+                else if (get() == '/' && offset + 1 != file.content.length) {
+                    if (file.content[offset + 1] == '/')
+                            singleComment()
+                    else if (file.content[offset + 1] == '*')
+                        multilineComment()
+                    else
+                        operator()
+                } else
+                    operator()
 
-            if (get().isDigit() || get() == '.' || get() == '-') {
-                val token = number()
-                token.setPosition(row, column)
-                tokens += token
-                continue
-            }
-
-            if (get().isLetter() || get() == '_') {
-                val token = keywordOrIdentify()
-                token.setPosition(row, column)
-                tokens += token
-                continue
-            }
-
-            if (get() == '"') {
-                val token = string()
-                token.setPosition(row, column)
-                tokens += token
-                continue
-            }
-
-            if (get() == '\'') {
-                val token = character()
-                token.setPosition(row, column)
-                tokens += token
-                continue
-            }
-
-            if (get() == '/') {
-                if (offset + 1 != file.content.length) if (file.content[offset + 1] == '/') {
-                    singleComment()
-                    next()
-                    continue
-                } else if (file.content[offset + 1] == '*') {
-                    multilineComment()
-                    next()
-                    continue
-                }
-            }
-
-            val token = operator()
             token.setPosition(row, column)
+            lastToken = token
             tokens += token
             continue
         }
-        mutableListToImmutableList(tokens)
     }
+
     private fun keywordOrIdentify(): AxolotlToken {
         val builder: StringBuilder = StringBuilder()
 
         do {
-            if (end()) break
+            if (end())
+                break
+            if (offset > 3) {
+                prev()
+                prev()
+                prev()
+                next()
+                next()
+                next()
+            }
             builder.append(next())
         } while (Character.isDigit(get()) || Character.isLetter(get()) || get() == '_' || get() in '0'..'9')
 
@@ -176,7 +169,69 @@ class AxolotlLexer(val file: File) : IAxolotlLexer {
     }
 
     private fun number(): AxolotlToken {
-        return TODO()
+        var isFloat = false;
+
+        val value = StringBuilder()
+
+        if (get() == '.') {
+            isFloat = true;
+            value.append(next())
+        }
+
+        if (lastToken != null && get() == '-') {
+            if (lastToken is AxolotlTokenLiteral)
+                return operator()
+            if (lastToken is AxolotlTokenIdentify)
+                return operator()
+            if (lastToken is AxolotlTokenDelimiter) {
+                if ((lastToken as AxolotlTokenDelimiter).type == AxolotlTokenDelimiterType.RIGHT_PARENT)
+                    return operator()
+                if ((lastToken as AxolotlTokenDelimiter).type == AxolotlTokenDelimiterType.RIGHT_BRACE)
+                    return operator()
+                if ((lastToken as AxolotlTokenDelimiter).type == AxolotlTokenDelimiterType.RIGHT_SQUARE)
+                    return operator()
+            }
+            value.append(next())
+        }
+
+        do {
+            if(end())
+                break;
+
+            if(get() == '.') {
+                if (isFloat)
+                    throw IllegalStateException("2 точки в 1 числе") // TODO
+                else
+                    isFloat = true
+            }
+
+            value.append(next());
+        } while ((get() in '0'..'9') || get() == '.');
+
+        var containsDigit = false
+        for (char in value) {
+            if (char.isDigit()) {
+                containsDigit = true
+                break
+            }
+        }
+
+        if(!containsDigit) {
+            for (char in value)
+                prev()
+            println(column)
+            return operator();
+        }
+
+        val postfix = get().lowercaseChar()
+        if (postfix == 'l' && isFloat)
+            throw IllegalStateException("Нельзя же так..")
+
+        if (postfix == 'l' || postfix == 'd' || postfix == 'f') {
+            value.append(next())
+        }
+
+        return AxolotlTokenLiteral(value.toString(), if (isFloat) AxolotlTokenLiteralType.FLOAT else AxolotlTokenLiteralType.INTEGER)
     }
 
     private fun string(): AxolotlTokenLiteral {
@@ -189,10 +244,12 @@ class AxolotlLexer(val file: File) : IAxolotlLexer {
 
     private fun singleComment(): AxolotlTokenComment {
         return TODO()
+        next()
     }
 
     private fun multilineComment(): AxolotlTokenComment {
         return TODO()
+        next()
     }
 
     private fun operator(): AxolotlTokenOperator {
@@ -249,6 +306,19 @@ class AxolotlLexer(val file: File) : IAxolotlLexer {
         return clone
     }
 
+    fun errorMessage(position: Position, errorMessage: String): String {
+        val whitespaces = " ".repeat(
+
+            row.toString().length + 1
+        )
+        return """
+        $whitespaces[ERROR]: $errorMessage
+        
+        $whitespaces╭ ⎯⎯⎯ ${file.filename}:${position.row}:${position.column} ⎯⎯⎯⎯⎯
+        ${position.row} │ ${file.getLine(position.row - 1)}
+        $whitespaces│${" ".repeat(position.column)}╰ $errorMessage
+    """.trimIndent()
+    }
 
 }
 

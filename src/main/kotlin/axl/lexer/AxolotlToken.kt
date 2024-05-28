@@ -33,6 +33,10 @@ abstract class AxolotlToken (open val content: Any) {
         return content == other.content
     }
 
+    override fun toString(): String {
+        return " ${position!!.row}:${position!!.column}:$length]"
+    }
+
 }
 
 class AxolotlTokenKeyword(override val content: AxolotlKeyword) : AxolotlToken(content) {
@@ -41,11 +45,35 @@ class AxolotlTokenKeyword(override val content: AxolotlKeyword) : AxolotlToken(c
         setLength(content.value.length)
     }
 
+    override fun toString(): String {
+        return "[KEYWORD \"${content.value}\"" + super.toString()
+    }
+
 }
 
-class AxolotlTokenOperator(override val content: AxolotlOperator) : AxolotlToken(content)
+class AxolotlTokenOperator(override val content: AxolotlOperator) : AxolotlToken(content) {
 
-class AxolotlTokenIdentify(override val content: String) : AxolotlToken(content)
+    init {
+        setLength(content.value.length)
+    }
+
+    override fun toString(): String {
+        return "[OPERATOR \"${content.value}\"" + super.toString()
+    }
+
+}
+
+class AxolotlTokenIdentify(override val content: String) : AxolotlToken(content) {
+
+    init {
+        setLength(content.length)
+    }
+
+    override fun toString(): String {
+        return "[IDENTIFY \"$content\"" + super.toString()
+    }
+
+}
 
 enum class AxolotlTokenLiteralType {
     STRING,
@@ -55,9 +83,35 @@ enum class AxolotlTokenLiteralType {
     BOOLEAN
 }
 
-class AxolotlTokenLiteral(override val content: String, val type: AxolotlTokenLiteralType) : AxolotlToken(content)
+class AxolotlTokenLiteral(override val content: String, val type: AxolotlTokenLiteralType) : AxolotlToken(content) {
 
-class AxolotlTokenComment(override val content: String) : AxolotlToken(content)
+    init {
+        if (type == AxolotlTokenLiteralType.STRING || type == AxolotlTokenLiteralType.CHARACTER)
+            setLength(content.length + 2)
+        else
+            setLength(content.length)
+    }
+
+    override fun toString(): String {
+        return "[LITERAL \"${type.name}\" \"${content}\"" + super.toString()
+    }
+
+}
+
+class AxolotlTokenComment(override val content: String) : AxolotlToken(content) {
+
+    init {
+        if ('\n' in content)
+            setLength(content.length + 4)
+        else
+            setLength(content.length + 2)
+    }
+
+    override fun toString(): String {
+        return "[COMMENT {\n${content}\n}" + super.toString()
+    }
+
+}
 
 enum class AxolotlTokenDelimiterType {
     LEFT_PARENT, RIGHT_PARENT,
@@ -68,4 +122,14 @@ enum class AxolotlTokenDelimiterType {
     LOW_SEMI
 }
 
-class AxolotlTokenDelimiter(override val content: String, val type: AxolotlTokenDelimiterType) : AxolotlToken(content)
+class AxolotlTokenDelimiter(override val content: String, val type: AxolotlTokenDelimiterType) : AxolotlToken(content) {
+
+    init {
+        setLength(content.length)
+    }
+
+    override fun toString(): String {
+        return "[DELIMITER \"${type.name}\" \"${content}\"" + super.toString()
+    }
+
+}

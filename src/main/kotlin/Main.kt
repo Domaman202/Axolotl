@@ -3,23 +3,26 @@ import axl.lexer.AxolotlKeyword
 import axl.lexer.AxolotlLexer
 import axl.lexer.AxolotlOperator
 
+// 0B1_01uL
+
 fun main(args: Array<String>) {
+//    val lexer = AxolotlLexer(File("Main.axl", """
+//        package axl.example
+//
+//        fn main(args: List<String>) > void {
+//            println("Hello, world!")
+//        }
+//    """.trimIndent()))
     val lexer = AxolotlLexer(File("Main.axl", """
-        package axl.example
+        package axl
+        bla bla
+        bla
         
-        fn main(args: List<String>) > void {
-            println("Hello, world!")
-        }
+        -.d bla
     """.trimIndent()))
 
     lexer.add(AxolotlKeyword("package", "package"))
-    lexer.add(AxolotlKeyword("fn", "function"))
-    lexer.add(AxolotlKeyword("void", "void"))
-
-    lexer.add(AxolotlOperator(".", "DOT"))
-    lexer.add(AxolotlOperator("<", "LESS"))
-    lexer.add(AxolotlOperator(">", "MORE"))
-    println(0B1_01uL)
-
-    lexer.confirm()
+    lexer.tokenize()
+    while (lexer.hasMoreTokens())
+        println(lexer.nextToken())
 }

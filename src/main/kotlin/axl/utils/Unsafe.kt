@@ -14,12 +14,4 @@ fun getUnsafe(): Unsafe {
     return unsafe as Unsafe
 }
 
-fun <T>mutableSetToImmutableSet(set: Set<T>) {
-    getUnsafe().putInt(set, 8, getUnsafe().getInt(setOf<T>(), 8))
-}
-
-fun <T>mutableListToImmutableList(list: List<T>) {
-    getUnsafe().putInt(list, 8, getUnsafe().getInt(listOf<T>(), 8))
-}
-
 
