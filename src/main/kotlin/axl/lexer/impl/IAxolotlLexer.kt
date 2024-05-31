@@ -6,7 +6,6 @@ import axl.lexer.AxolotlToken
 import axl.lexer.AxolotlLexerTokenWillNotEaten
 
 interface IAxolotlLexer {
-
     /**
      * Tokenized all tokens.
      */
