@@ -1,15 +1,12 @@
 package axl.lexer.impl
 
 import axl.File
-import axl.lexer.AxolotlLexerFrame
-import axl.lexer.AxolotlToken
+import axl.lexer.AxolotlKeyword
 import axl.lexer.AxolotlLexerTokenWillNotEaten
+import axl.lexer.AxolotlOperator
+import axl.lexer.AxolotlToken
 
 interface IAxolotlLexer {
-    /**
-     * Tokenized all tokens.
-     */
-    fun tokenize()
 
     /**
      * Creates a new lexer with the same settings.
@@ -40,12 +37,6 @@ interface IAxolotlLexer {
     fun peekToken(): AxolotlToken?
 
     /**
-     * Checks if the lexer has more tokens to read.
-     * @return true if there are more tokens, false otherwise.
-     */
-    fun hasMoreTokens(): Boolean
-
-    /**
      * Saves the current state of the lexer to a frame.
      * @return a frame representing the current state of the lexer.
      */
@@ -56,5 +47,27 @@ interface IAxolotlLexer {
      * @param frame the frame to restore the state from.
      */
     fun restoreFrame(frame: AxolotlLexerFrame)
+
+    /**
+     * @return file from the lexer.
+     */
+    fun getFile(): File
+
+    /**
+     * @param size tab size in whitespaces. The default value is 4.
+     */
+    fun setTabSize(size: Int)
+
+    /**
+     * TODO docs, throws
+     */
+    fun add(keyword: AxolotlKeyword)
+
+    /**
+     * TODO docs, throws
+     */
+    fun add(operator: AxolotlOperator)
+
+    data class AxolotlLexerFrame(val lastToken: AxolotlToken?, val offset: Int, val row: Int, val column: Int)
 
 }

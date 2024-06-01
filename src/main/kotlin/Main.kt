@@ -1,28 +1,35 @@
 import axl.File
-import axl.lexer.AxolotlKeyword
-import axl.lexer.AxolotlLexer
-import axl.lexer.AxolotlOperator
+import axl.lexer.*
 
 // 0B1_01uL
 
-fun main(args: Array<String>) {
-//    val lexer = AxolotlLexer(File("Main.axl", """
-//        package axl.example
-//
-//        fn main(args: List<String>) > void {
-//            println("Hello, world!")
-//        }
-//    """.trimIndent()))
+fun main() {
     val lexer = AxolotlLexer(File("Main.axl", """
-        package axl
-        bla bla
-        bla
+        package axl.example;
+
+        fn main(args: List<String>) > void {
+            println("Hello, world!");
+        }
         
-        -.d bla
     """.trimIndent()))
 
-    lexer.add(AxolotlKeyword("package", "package"))
-    lexer.tokenize()
-    while (lexer.hasMoreTokens())
-        println(lexer.nextToken())
+    lexer.add(AxolotlOperator("."))
+    lexer.add(AxolotlOperator(":"))
+    lexer.add(AxolotlOperator(">"))
+    lexer.add(AxolotlOperator("<"))
+    lexer.add(AxolotlKeyword("package"))
+    lexer.add(AxolotlKeyword("fn"))
+    lexer.add(AxolotlKeyword("void"))
+    val frame = lexer.saveFrame()
+    try {
+        val time = System.nanoTime()
+        while (lexer.nextToken() != null) {}
+        println(System.nanoTime() - time)
+
+        lexer.restoreFrame(frame)
+        while (lexer.nextToken() != null)
+            println(lexer.peekToken())
+    } catch (e: AxolotlLexerTokenizeException) {
+        System.err.println(e.message)
+    }
 }
