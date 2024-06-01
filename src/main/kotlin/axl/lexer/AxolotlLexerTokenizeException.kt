@@ -1,3 +1,3 @@
 package axl.lexer
 
-class AxolotlLexerTokenizeException(override val message: String) : Exception(message)
+class AxolotlLexerTokenizeException(override val message: String) : RuntimeException(message)

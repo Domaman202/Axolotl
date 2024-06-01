@@ -9,8 +9,9 @@ fun main() {
     """.trimIndent()))
 
     lexer.add(AxolotlOperator(":-/"))
-    val frame = lexer.saveFrame()
+    
     try {
+        val frame = lexer.saveFrame()
         val time = System.nanoTime()
         while (lexer.nextToken() != null) ;
         println(System.nanoTime() - time)

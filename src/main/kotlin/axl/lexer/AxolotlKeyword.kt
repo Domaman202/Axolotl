@@ -4,8 +4,10 @@ import java.lang.IllegalArgumentException
 
 class AxolotlKeyword(val value: String, val debugName: String? = null) {
     init {
-        if (!value.matches(REGEX)) {
-            throw IllegalArgumentException("The keyword must consist of Latin letters only and contain at least one character.")
+        for (char in value) {
+            if (!char.isKeyword()) {
+                throw IllegalArgumentException("The keyword must consist of Latin letters only and contain at least one character.")
+            }
         }
     }
 
@@ -19,7 +21,12 @@ class AxolotlKeyword(val value: String, val debugName: String? = null) {
     override fun hashCode(): Int =
         value.hashCode()
 
-    companion object {
-        val REGEX = Regex("[A-Za-z]+")
+}
+
+fun Char.isKeyword() : Boolean {
+    return when(this) {
+        in 'a'..'z',
+        in 'A'..'Z', '_' -> true
+        else -> false
     }
 }
