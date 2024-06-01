@@ -4,8 +4,10 @@ import java.lang.IllegalArgumentException
 
 class AxolotlOperator(val value: String, val debugName: String? = null) {
     init {
-        if (!value.matches(REGEX)) {
-            throw IllegalArgumentException("The operator can only contain characters from \"`!@#\$%^&*\\-=+:.<>/?|~\"")
+        for (char in value) {
+            if (!char.isOperator()) {
+                throw IllegalArgumentException("The operator can only contain characters from \"`!@#\$%^&*\\-=+:.<>/?|~`\"")
+            }
         }
     }
 
@@ -17,7 +19,13 @@ class AxolotlOperator(val value: String, val debugName: String? = null) {
     override fun hashCode(): Int =
         value.hashCode()
 
-    companion object {
-        val REGEX = Regex("[`!@#$%^&*\\\\\\-=+:.<>/?|~]+")
+}
+
+fun Char.isOperator() : Boolean {
+    return when(this) {
+        '!', '@', '#', '$', '%', '^', '&', '*', '\\',
+        '-', '=', '+', ':', '.', '<', '>', '/', '?',
+        '|', '~', '`' -> true
+        else -> false
     }
 }

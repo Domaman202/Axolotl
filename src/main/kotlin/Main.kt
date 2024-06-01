@@ -5,21 +5,10 @@ import axl.lexer.*
 
 fun main() {
     val lexer = AxolotlLexer(File("Main.axl", """
-        package axl.example;
-
-        fn main(args: List<String>) > void {
-            println("Hello, world!");
-        }
-        
+        :-/
     """.trimIndent()))
 
-    lexer.add(AxolotlOperator("."))
-    lexer.add(AxolotlOperator(":"))
-    lexer.add(AxolotlOperator(">"))
-    lexer.add(AxolotlOperator("<"))
-    lexer.add(AxolotlKeyword("package"))
-    lexer.add(AxolotlKeyword("fn"))
-    lexer.add(AxolotlKeyword("void"))
+    lexer.add(AxolotlOperator(":-/"))
     val frame = lexer.saveFrame()
     try {
         val time = System.nanoTime()

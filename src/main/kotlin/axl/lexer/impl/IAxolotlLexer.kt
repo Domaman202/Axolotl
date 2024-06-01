@@ -4,7 +4,7 @@ import axl.File
 import axl.lexer.AxolotlKeyword
 import axl.lexer.AxolotlLexerTokenWillNotEaten
 import axl.lexer.AxolotlOperator
-import axl.lexer.AxolotlToken
+import axl.lexer.token.AxolotlToken
 
 interface IAxolotlLexer {
 

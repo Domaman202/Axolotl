@@ -3,8 +3,10 @@ package axl.lexer
 import axl.File
 import axl.lexer.impl.IAxolotlLexer
 import axl.lexer.impl.IAxolotlLexer.AxolotlLexerFrame
+import axl.lexer.token.*
 
 class AxolotlLexer(private val file: File) : IAxolotlLexer {
+
     private var tabSize = 4
     private var offset: Int = 0
     private var row: Int = 1
@@ -12,7 +14,6 @@ class AxolotlLexer(private val file: File) : IAxolotlLexer {
     private val keywords: MutableSet<AxolotlKeyword> = mutableSetOf()
     private val operators: MutableSet<AxolotlOperator> = mutableSetOf()
     private var maxOperatorLength = 0
-    private val tokens: MutableList<AxolotlToken> = mutableListOf()
     private var lastToken: AxolotlToken? = null
     private var frame: AxolotlLexerFrame? = null
 
@@ -74,7 +75,6 @@ class AxolotlLexer(private val file: File) : IAxolotlLexer {
         offset >= file.content.length
 
     private fun skip() {
-        next()
         while (!end() && get().let { it == ' ' || it == '\n' || it == '\r' || it == '\t' }) {
             next()
         }
@@ -331,16 +331,16 @@ class AxolotlLexer(private val file: File) : IAxolotlLexer {
     }
 
     private fun singleComment(): AxolotlTokenComment {
-        val value = StringBuilder()
         while (!end() && !(get() == '\n' || get() == '\r'))
-            value.append(next())
+            next()
+
         if (!end())
             next()
-        return AxolotlTokenComment(value.toString())
+
+        return AxolotlTokenComment(file.content.substring(frame!!.offset + 2, offset - 1))
     }
 
     private fun multilineComment(): AxolotlTokenComment {
-        val value = StringBuilder()
         next()
         while (!end())
         {
@@ -353,20 +353,20 @@ class AxolotlLexer(private val file: File) : IAxolotlLexer {
                     break
                 }
             }
-            value.append(get())
         }
 
         if (end())
             throw AxolotlLexerTokenizeException(error("The comment is not closed."))
         next()
-        return AxolotlTokenComment(value.toString())
+
+        return AxolotlTokenComment(file.content.substring(frame!!.offset + 2, offset - 2))
     }
 
     private fun operator(): AxolotlTokenOperator {
         val confirmOperators: MutableMap<AxolotlOperator, AxolotlLexerFrame> = mutableMapOf()
         val value = StringBuilder()
 
-        while (!end() && get().toString().matches(AxolotlOperator.REGEX)) {
+        while (!end() && get().isOperator()) {
             value.append(next())
             operators.forEach {
                 if (it.value == value.toString()) {
@@ -433,7 +433,8 @@ class AxolotlLexer(private val file: File) : IAxolotlLexer {
                 }
             }
         }.apply {
-            position = AxolotlTokenPosition(frame!!.row, frame!!.column)
+            row = frame!!.row
+            column = frame!!.column
             length = offset - frame!!.offset
             lastToken = this
         }
