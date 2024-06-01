@@ -1,14 +1,11 @@
 package axl.lexer
 
 class AxolotlTokenLiteral(override val content: String, val type: AxolotlTokenLiteralType) : AxolotlToken(content) {
-    init {
-        length = when (type) {
-            AxolotlTokenLiteralType.STRING,
-            AxolotlTokenLiteralType.CHARACTER -> content.length + 2
-            else -> content.length
-        }
-    }
+    constructor(content: Char) : this(content.toString(), AxolotlTokenLiteralType.CHARACTER)
+    constructor(content: String) : this(content, AxolotlTokenLiteralType.STRING)
 
     override fun toString(): String =
-        "[LITERAL \"${type.name}\" \"${content}\"" + super.toString()
+        if ('\n' in content)
+            "[LITERAL \"${type.name}\" {\n$content\n}" + super.toString()
+        else "[LITERAL \"${type.name}\" \"${content}\"" + super.toString()
 }
