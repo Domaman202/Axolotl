@@ -6,7 +6,6 @@ import axl.lexer.impl.IAxolotlLexer.AxolotlLexerFrame
 import axl.lexer.token.*
 
 class AxolotlLexer(private val file: File) : IAxolotlLexer {
-
     private var tabSize = 4
     private var offset: Int = 0
     private var row: Int = 1
@@ -217,9 +216,7 @@ class AxolotlLexer(private val file: File) : IAxolotlLexer {
         if (get() != '\n' && get() != ' ' && get() != '\t') {
             lines += StringBuilder()
             minLineOffset = 0
-        } else {
-            lines += StringBuilder()
-        }
+        } else lines += StringBuilder()
 
         var whitespaces = 0
         var isLineBegin = true
@@ -333,10 +330,8 @@ class AxolotlLexer(private val file: File) : IAxolotlLexer {
     private fun singleComment(): AxolotlTokenComment {
         while (!end() && !(get() == '\n' || get() == '\r'))
             next()
-
         if (!end())
             next()
-
         return AxolotlTokenComment(file.content.substring(frame!!.offset + 2, offset - 1))
     }
 

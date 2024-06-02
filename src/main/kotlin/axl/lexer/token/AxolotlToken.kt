@@ -30,9 +30,7 @@ abstract class AxolotlToken(open val content: Any) {
         else when (type) {
             AxolotlTokenDelimiterType.RIGHT_SQUARE,
             AxolotlTokenDelimiterType.RIGHT_BRACE,
-            AxolotlTokenDelimiterType.RIGHT_PARENT
-            -> true
+            AxolotlTokenDelimiterType.RIGHT_PARENT -> true
             else -> false
         }
-
 }

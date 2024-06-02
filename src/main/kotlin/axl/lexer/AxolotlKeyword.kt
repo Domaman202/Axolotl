@@ -20,7 +20,6 @@ class AxolotlKeyword(val value: String, val debugName: String? = null) {
 
     override fun hashCode(): Int =
         value.hashCode()
-
 }
 
 fun Char.isKeyword() : Boolean {
