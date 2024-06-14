@@ -6,40 +6,27 @@ import axl.lexer.impl.IAxolotlLexer.AxolotlLexerFrame
 import axl.lexer.token.*
 
 class AxolotlLexer(private val file: File) : IAxolotlLexer {
-    private var tabSize = 4
+
     private var offset: Int = 0
     private var row: Int = 1
     private var column: Int = 1
-    private val keywords: MutableSet<AxolotlKeyword> = mutableSetOf()
-    private val operators: MutableSet<AxolotlOperator> = mutableSetOf()
-    private var maxOperatorLength = 0
     private var lastToken: AxolotlToken? = null
     private var frame: AxolotlLexerFrame? = null
+    private val keywords: MutableSet<AxolotlKeyword> = mutableSetOf()
+    private val operators: MutableSet<AxolotlOperator> = mutableSetOf()
+    private var tabSize = 4
 
     override fun add(keyword: AxolotlKeyword) {
         if (keyword in keywords)
             throw IllegalArgumentException("The keyword \"${keyword.value}\" is already in the lexer.")
-        if (confirm)
-            throw IllegalStateException("You cannot add keywords after confirming the lexer.")
         keywords += keyword
     }
 
     override fun add(operator: AxolotlOperator) {
         if (operator in operators)
             throw IllegalArgumentException("The keyword \"${operator.value}\" is already in the lexer.")
-        if (confirm)
-            throw IllegalStateException("You cannot add operators after confirming the lexer.")
-        maxOperatorLength = maxOf(maxOperatorLength, operator.value.length)
         operators += operator
     }
-
-    private var confirm = false
-
-    private fun confirm() {
-        confirm = true
-    }
-
-    // process
 
     private fun next(n: Int): Char {
         for (i in 1..<n)
@@ -219,7 +206,7 @@ class AxolotlLexer(private val file: File) : IAxolotlLexer {
         } else lines += StringBuilder()
 
         var whitespaces = 0
-        var isLineBegin = true
+        var lineBegin = true
         while (true) {
             if (end())
                 throw AxolotlLexerTokenizeException(error("The string is not closed."))
@@ -228,7 +215,7 @@ class AxolotlLexer(private val file: File) : IAxolotlLexer {
                 it == '"' -> {
                     if (offset + 1 != file.content.length && file.content[offset + 1] == '"') {
                         if (offset + 2 != file.content.length && file.content[offset + 2] == '"') {
-                            if (isLineBegin)
+                            if (lineBegin)
                                 lines.removeLast()
                             next(3)
                             break
@@ -236,36 +223,36 @@ class AxolotlLexer(private val file: File) : IAxolotlLexer {
                     }
                 }
 
-                isLineBegin -> when (it) {
+                lineBegin -> when (it) {
                     ' ' -> whitespaces++
                     '\t' -> whitespaces += tabSize
                 }
 
                 it == '\n' -> {
-                    if (!isLineBegin)
+                    if (!lineBegin)
                         minLineOffset = minOf(minLineOffset, whitespaces)
                     whitespaces = 0
-                    isLineBegin = true
+                    lineBegin = true
                     lines += StringBuilder()
                     next()
                     continue
                 }
 
-                else -> isLineBegin = false
+                else -> lineBegin = false
             }
 
             lines.last().append(next());
         }
 
-        isLineBegin = true
+        lineBegin = true
         for (char in lines.first()) {
             if (char != '\t' && char != ' ') {
-                isLineBegin = false
+                lineBegin = false
                 break
             }
         }
 
-        if (isLineBegin) {
+        if (lineBegin) {
             lines.removeFirst()
         }
 
@@ -452,8 +439,6 @@ class AxolotlLexer(private val file: File) : IAxolotlLexer {
         this.file
 
     override fun setTabSize(size: Int) {
-        if (confirm)
-            throw IllegalStateException("You cannot set tab size after confirming the lexer.")
         this.tabSize = size
     }
 
@@ -461,6 +446,7 @@ class AxolotlLexer(private val file: File) : IAxolotlLexer {
         val clone = AxolotlLexer(file)
         keywords.forEach { clone.add(it) }
         operators.forEach { clone.add(it) }
+        clone.setTabSize(this.tabSize)
         return clone
     }
 
@@ -472,7 +458,7 @@ class AxolotlLexer(private val file: File) : IAxolotlLexer {
         else """
             $whitespaces[ERROR]: $message
         
-            $whitespaces╭ ⎯⎯⎯ ${file.filename}:${frame!!.row}:${frame!!.column} ⎯⎯⎯⎯⎯
+            $whitespaces╭ ——— ${file.filename}:${frame!!.row}:${frame!!.column} ———
             ${frame!!.row} │ ${file.getLine(frame!!.row - 1)}
             $whitespaces│${" ".repeat(frame!!.column)}╰ $message
         """.trimIndent()
