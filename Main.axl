@@ -1,6 +1,0 @@
-package axl.example;
-
-fn main(args: List<String>) {
-    val x = "323";
-    val y = 321 + 43 * 23;
-}
