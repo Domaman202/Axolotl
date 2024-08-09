@@ -15,6 +15,7 @@ public enum TokenType {
     LEFT_SQUARE(TokenGroup.DELIMITER, "["),
     RIGHT_SQUARE(TokenGroup.DELIMITER, "]"),
     COMMA(TokenGroup.DELIMITER, ","),
+    DOT(TokenGroup.DELIMITER, "."),
     SEMI(TokenGroup.DELIMITER, ";"),
 
     PLUS(TokenGroup.OPERATOR, "+"),

@@ -1,15 +1,11 @@
 package axl.compiler.lexer;
 
 import axl.compiler.IFile;
+import axl.compiler.lexer.utils.TokenizerUtils;
 import lombok.Getter;
 import lombok.NonNull;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-public class DefaultTokenizer implements Tokenizer {
+public class DefaultTokenizer implements Tokenizer, TokenizerUtils {
 
     @Getter
     private final IFile file;
@@ -51,35 +47,24 @@ public class DefaultTokenizer implements Tokenizer {
         return token;
     }
 
+    private IToken readIdentifyOrKeyword() {
+        do {
+            next();
+        } while (isIdentifierPart(peek()));
 
-    private IToken readIdOrKeyword() {
-        final StringBuffer buffer = new StringBuffer();
-        buffer.append(peek(0));
-        char current = next();
-        while (LexerHelper.isIdentifierPart(current)) {
-            buffer.append(current);
-            current = next();
-        }
-        final String word = buffer.toString();
-        if (TokenType.keywords().contains(word)) {
-            //return keyword token
-        }
-        return new DefaultToken(TokenType.IDENTIFY);
-
-
+        TokenType type = TokenType.getByRepresentation(slice());
+        return new DefaultToken(type == null ? TokenType.IDENTIFY : type);
     }
 
     //so far number tokenization only scans int and float
     private IToken readNumber() {
-        char current = peek(0);
+        char current = peek();
         boolean isFloat = false;
-        boolean hasDot = false;
         while (true) {
-            if (current == '.') {
-                isFloat = true;
-                if (hasDot)
+            if (current == '.') { // FIXME TokenType.DOT
+                if (isFloat)
                     throw new RuntimeException("Invalid float number ");
-                hasDot = true;
+                isFloat = true;
             } else if (!Character.isDigit(current)) {
                 break;
             }
@@ -91,6 +76,7 @@ public class DefaultTokenizer implements Tokenizer {
             return new DefaultToken(TokenType.INTEGER_LITERAL);
         }
     }
+
     private char next(int n) {
         for (int i = 1; i < n; i++)
             next();
@@ -99,7 +85,7 @@ public class DefaultTokenizer implements Tokenizer {
     }
 
     private char next() {
-        char current = get();
+        char current = peek();
         offset++;
         if (current == '\n') {
             line++;
@@ -110,11 +96,8 @@ public class DefaultTokenizer implements Tokenizer {
         return current;
     }
 
-    private char get() {
-        if (end())
-            return '\0';
-
-        return file.getContent().charAt(offset);
+    private char peek() {
+        return peek(0);
     }
 
     private char peek(int n) {
@@ -127,6 +110,15 @@ public class DefaultTokenizer implements Tokenizer {
 
     private boolean end() {
         return offset >= file.getContent().length();
+    }
+
+    private String slice() {
+        return getFile()
+                .getContent()
+                .subSequence(
+                        last.offset(),
+                        this.offset
+                ).toString();
     }
 
     @Override
