@@ -4,6 +4,11 @@ import axl.compiler.IFile;
 import lombok.Getter;
 import lombok.NonNull;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class DefaultTokenizer implements Tokenizer {
 
     @Getter
@@ -19,6 +24,7 @@ public class DefaultTokenizer implements Tokenizer {
 
     public DefaultTokenizer(@NonNull IFile file, IToken last) {
         this.file = file;
+
         if (last != null) {
             this.offset = last.getOffset();
             this.line = last.getLine();
@@ -45,6 +51,46 @@ public class DefaultTokenizer implements Tokenizer {
         return token;
     }
 
+
+    private IToken readIdOrKeyword() {
+        final StringBuffer buffer = new StringBuffer();
+        buffer.append(peek(0));
+        char current = next();
+        while (LexerHelper.isIdentifierPart(current)) {
+            buffer.append(current);
+            current = next();
+        }
+        final String word = buffer.toString();
+        if (TokenType.keywords().contains(word)) {
+            //return keyword token
+        }
+        return new DefaultToken(TokenType.IDENTIFY);
+
+
+    }
+
+    //so far number tokenization only scans int and float
+    private IToken readNumber() {
+        char current = peek(0);
+        boolean isFloat = false;
+        boolean hasDot = false;
+        while (true) {
+            if (current == '.') {
+                isFloat = true;
+                if (hasDot)
+                    throw new RuntimeException("Invalid float number ");
+                hasDot = true;
+            } else if (!Character.isDigit(current)) {
+                break;
+            }
+            current = next();
+        }
+        if (isFloat) {
+            return new DefaultToken(TokenType.FLOAT_LITERAL);
+        } else {
+            return new DefaultToken(TokenType.INTEGER_LITERAL);
+        }
+    }
     private char next(int n) {
         for (int i = 1; i < n; i++)
             next();
