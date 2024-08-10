@@ -1,4 +1,4 @@
-package axl.compiler.lexer.utils;
+package axl.compiler.analysis.lexical.utils;
 
 public interface TokenizerUtils {
 
