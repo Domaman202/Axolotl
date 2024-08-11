@@ -35,7 +35,9 @@ public class DefaultTokenizer implements Tokenizer, TokenizerUtils {
         this.last = new DefaultTokenizerFrame(offset, line, column);
         if (end())
             return null; // TODO throw
-
+        while (Character.isWhitespace(peek())) {
+            skip();
+        }
         DefaultToken token = null; // TODO tokenize
 
         token.offset = last.offset();
@@ -56,26 +58,69 @@ public class DefaultTokenizer implements Tokenizer, TokenizerUtils {
         return new DefaultToken(type == null ? TokenType.IDENTIFY : type);
     }
 
-    //so far number tokenization only scans int and float
     private IToken readNumber() {
+        StringBuilder buffer = new StringBuilder();
         char current = peek();
+        if (current == '0' && (peek(1) == 'x' || (peek(1) == 'X'))) {
+            readHexNumber(2);
+        }
+
         boolean isFloat = false;
+        boolean isDecimal = false;
         while (true) {
             if (current == '.') { // FIXME TokenType.DOT
+                isDecimal = true;
                 if (isFloat)
                     throw new RuntimeException("Invalid float number ");
                 isFloat = true;
+            } else if (current == 'e' || current == 'E') {
+                isDecimal = true;
+                int exp = readScientificNumber();
+                buffer.append(current).append(exp);
+                break;
             } else if (!Character.isDigit(current)) {
                 break;
             }
+            buffer.append(current);
             current = next();
         }
-        if (isFloat) {
+        String number = buffer.toString();
+        if (isDecimal) {
+            return new DefaultToken(TokenType.DECIMAL_LITERAL);
+        }else if (isFloat) {
             return new DefaultToken(TokenType.FLOAT_LITERAL);
         } else {
             return new DefaultToken(TokenType.INTEGER_LITERAL);
         }
     }
+    private int readScientificNumber() {
+        int sign = switch (next()) {
+            case '-' -> { skip(); yield -1; }
+            case '+' -> { skip(); yield 1; }
+            default -> 1;
+        };
+
+        boolean hasValue = false;
+        char current = peek(0);
+        while (current == '0') {
+            hasValue = true;
+            current = next();
+        }
+        int result = 0;
+        int position = 0;
+        while (Character.isDigit(current)) {
+            result = result * 10 + (current - '0');
+            current = next();
+            position++;
+        }
+        if (position == 0 && !hasValue) throw new RuntimeException("Empty floating point exponent");
+        if (position >= 4) {
+            if (sign > 0) throw new RuntimeException("Float number too large");
+            else throw new RuntimeException("Float number too small");
+        }
+        return sign * result;
+    }
+
     private IToken readHexNumber(int skipChars) {
         final StringBuilder buffer = new StringBuilder();
         // Skip HEX prefix 0x or #
@@ -95,6 +140,14 @@ public class DefaultTokenizer implements Tokenizer, TokenizerUtils {
         String number = buffer.toString();
         return new DefaultToken(TokenType.HEX_LITERAL);
 
+    }
+    private void readComment() {
+        skip();
+        skip();
+        char current = peek();
+        while ("\r\n\0".indexOf(current) == -1) {
+            current = next();
+        }
     }
     private char next(int n) {
         for (int i = 1; i < n; i++)
