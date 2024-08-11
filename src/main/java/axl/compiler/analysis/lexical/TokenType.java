@@ -93,6 +93,7 @@ public enum TokenType {
 
     IDENTIFY(TokenGroup.IDENTIFY),
 
+    HEX_LITERAL(TokenGroup.LITERAL),
     INTEGER_LITERAL(TokenGroup.LITERAL),
     LONG_LITERAL(TokenGroup.LITERAL),
     FLOAT_LITERAL(TokenGroup.LITERAL),

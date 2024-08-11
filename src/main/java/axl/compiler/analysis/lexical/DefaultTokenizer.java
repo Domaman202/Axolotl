@@ -76,25 +76,46 @@ public class DefaultTokenizer implements Tokenizer, TokenizerUtils {
             return new DefaultToken(TokenType.INTEGER_LITERAL);
         }
     }
+    private IToken readHexNumber(int skipChars) {
+        final StringBuilder buffer = new StringBuilder();
+        // Skip HEX prefix 0x or #
+        for (int i = 0; i < skipChars; i++) skip();
+        char current = peek(0);
+        while (isHexNumber(current) || (current == '_')) {
+            if (current != '_') {
+                buffer.append(current);
+            }
+            current = next();
+        }
 
+        if (buffer.isEmpty()) throw new RuntimeException("Empty HEX value");
+        if (peek(-1) == '_') throw new RuntimeException("HEX value cannot end with _");
+
+
+        String number = buffer.toString();
+        return new DefaultToken(TokenType.HEX_LITERAL);
+
+    }
     private char next(int n) {
         for (int i = 1; i < n; i++)
             next();
 
         return next();
     }
+    private void skip() {
+        final char result = peek();
+        if (result == '\n') {
+            line++;
+            column = 1;
+        } else column++;
+        offset++;
+    }
 
     private char next() {
-        char current = peek();
-        offset++;
-        if (current == '\n') {
-            line++;
-            column = 0;
-        } else {
-            column++;
-        }
-        return current;
+        skip();
+        return peek(0);
     }
+
 
     private char peek() {
         return peek(0);
