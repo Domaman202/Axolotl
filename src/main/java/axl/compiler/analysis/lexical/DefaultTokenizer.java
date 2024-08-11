@@ -27,17 +27,15 @@ public class DefaultTokenizer implements Tokenizer, TokenizerUtils {
             next(last.getLength());
         }
 
-        // TODO skip();
+        skip();
     }
 
     @Override
     public IToken tokenize() {
         this.last = new DefaultTokenizerFrame(offset, line, column);
         if (end())
-            return null; // TODO throw
-        while (Character.isWhitespace(peek())) {
-            skip();
-        }
+            throw new RuntimeException();
+
         DefaultToken token = null; // TODO tokenize
 
         token.offset = last.offset();
@@ -45,7 +43,7 @@ public class DefaultTokenizer implements Tokenizer, TokenizerUtils {
         token.line = last.line();
         token.length = this.offset - last.offset();
 
-        // TODO skip();
+        skip();
         return token;
     }
 
@@ -59,116 +57,244 @@ public class DefaultTokenizer implements Tokenizer, TokenizerUtils {
     }
 
     private IToken readNumber() {
-        StringBuilder buffer = new StringBuilder();
-        char current = peek();
-        if (current == '0' && (peek(1) == 'x' || (peek(1) == 'X'))) {
-            readHexNumber(2);
+        if (peek(0) == '0') {
+            if (peek(1) == 'x' || peek(1) == 'X')
+                return readHexNumber();
+            else if (peek(1) == 'b' || peek(1) == 'B')
+                return readBinNumber();
+            else if (peek(1) == '.')
+                return readFloatingPointNumber();
+            else if (peek(1) == '_' && isNumber(peek(1)))
+                return readDecNumber();
+
+            next();
+            return new DefaultToken(TokenType.DEC_NUMBER);
         }
 
-        boolean isFloat = false;
-        boolean isDecimal = false;
-        while (true) {
-            if (current == '.') { // FIXME TokenType.DOT
-                isDecimal = true;
-                if (isFloat)
-                    throw new RuntimeException("Invalid float number ");
-                isFloat = true;
-            } else if (current == 'e' || current == 'E') {
-                isDecimal = true;
-                int exp = readScientificNumber();
-                buffer.append(current).append(exp);
-                break;
-            } else if (!Character.isDigit(current)) {
+        if (peek(0) == '.') {
+            if (!isNumber(peek(1))) {
+                next();
+                return new DefaultToken(TokenType.DOT);
+            }
+
+            return readFloatingPointNumber();
+        }
+
+        return readDecNumber();
+    }
+
+    private IToken readHexNumber() {
+        next(2);
+        int cnt = 0;
+        boolean zeroStart = true;
+
+        if (peek() != '0') {
+            zeroStart = false;
+            cnt++;
+        }
+        if (!isHexNumber(next()))
+            throw new RuntimeException();
+
+        boolean lastUnderscore = false;
+
+        for(;;) {
+            if (isHexNumber(peek())) {
+                lastUnderscore = false;
+                if (peek() != '0' && zeroStart) {
+                    zeroStart = false;
+                    cnt++;
+                }
+                next();
+            }
+            else if (peek() == '_') {
+                lastUnderscore = true;
+                next();
+            } else {
                 break;
             }
-            buffer.append(current);
-            current = next();
         }
-        String number = buffer.toString();
-        if (isDecimal) {
-            return new DefaultToken(TokenType.DECIMAL_LITERAL);
-        }else if (isFloat) {
-            return new DefaultToken(TokenType.FLOAT_LITERAL);
-        } else {
-            return new DefaultToken(TokenType.INTEGER_LITERAL);
-        }
-    }
-    private int readScientificNumber() {
-        int sign = switch (next()) {
-            case '-' -> { skip(); yield -1; }
-            case '+' -> { skip(); yield 1; }
-            default -> 1;
-        };
 
-        boolean hasValue = false;
-        char current = peek(0);
-        while (current == '0') {
-            hasValue = true;
-            current = next();
+        if (lastUnderscore)
+            throw new RuntimeException();
+
+        if (peek() == 'L' || peek() == 'l') {
+            if (cnt > 16)
+                throw new RuntimeException();
+            next();
+            return new DefaultToken(TokenType.HEX_LONG_NUMBER);
         }
-        int result = 0;
-        int position = 0;
-        while (Character.isDigit(current)) {
-            result = result * 10 + (current - '0');
-            current = next();
-            position++;
-        }
-        if (position == 0 && !hasValue) throw new RuntimeException("Empty floating point exponent");
-        if (position >= 4) {
-            if (sign > 0) throw new RuntimeException("Float number too large");
-            else throw new RuntimeException("Float number too small");
-        }
-        return sign * result;
+
+        if (cnt > 8)
+            throw new RuntimeException();
+        return new DefaultToken(TokenType.HEX_NUMBER);
     }
 
-    private IToken readHexNumber(int skipChars) {
-        final StringBuilder buffer = new StringBuilder();
-        // Skip HEX prefix 0x or #
-        for (int i = 0; i < skipChars; i++) skip();
-        char current = peek(0);
-        while (isHexNumber(current) || (current == '_')) {
-            if (current != '_') {
-                buffer.append(current);
+    private IToken readBinNumber() {
+        next(2);
+        int cnt = 0;
+        boolean zeroStart = true;
+
+        if (peek() != '0') {
+            zeroStart = false;
+            cnt++;
+        }
+        if (!isBinNumber(next()))
+            throw new RuntimeException();
+
+        boolean lastUnderscore = false;
+
+        for(;;) {
+            if (isBinNumber(peek())) {
+                lastUnderscore = false;
+                if (peek() != '0' && zeroStart) {
+                    zeroStart = false;
+                    cnt++;
+                }
+                next();
             }
-            current = next();
+            else if (peek() == '_') {
+                lastUnderscore = true;
+                next();
+            } else {
+                break;
+            }
         }
 
-        if (buffer.isEmpty()) throw new RuntimeException("Empty HEX value");
-        if (peek(-1) == '_') throw new RuntimeException("HEX value cannot end with _");
+        if (lastUnderscore)
+            throw new RuntimeException();
 
-
-        String number = buffer.toString();
-        return new DefaultToken(TokenType.HEX_LITERAL);
-
-    }
-    private void readComment() {
-        skip();
-        skip();
-        char current = peek();
-        while ("\r\n\0".indexOf(current) == -1) {
-            current = next();
+        if (peek() == 'L' || peek() == 'l') {
+            if (cnt > 64)
+                throw new RuntimeException();
+            next();
+            return new DefaultToken(TokenType.BIN_LONG_NUMBER);
         }
+
+        if (cnt > 32)
+            throw new RuntimeException();
+        return new DefaultToken(TokenType.BIN_NUMBER);
     }
-    private char next(int n) {
-        for (int i = 1; i < n; i++)
+
+    private IToken readDecNumber() {
+        if (!isNumber(next()))
+            throw new RuntimeException();
+
+        readDecPart(true);
+
+        if (peek() == '.')
+            return readFloatingPointNumber();
+
+        if (peek() == 'L' || peek() == 'l') {
+            next();
+            return new DefaultToken(TokenType.DEC_LONG_NUMBER);
+        }
+
+        return new DefaultToken(TokenType.DEC_NUMBER);
+    }
+
+    private IToken readFloatingPointNumber() {
+        boolean exp = false;
+        readDecPart(false);
+
+        if (peek() == '.') {
+            next();
+            readDecPart(true);
+        }
+
+        if (peek() == 'E' || peek() == 'e') {
+            switch (next()) {
+                case '-', '+':
+                    next();
+                default:
+            };
+            readDecPart(true);
+            exp = true;
+        }
+
+        if (peek() == 'F' || peek() == 'f') {
+            next();
+            return new DefaultToken(exp ? TokenType.FLOAT_EXP_NUMBER : TokenType.FLOAT_NUMBER);
+        }
+
+        if (peek() == 'D' || peek() == 'd')
             next();
 
-        return next();
+        return new DefaultToken(exp ? TokenType.DOUBLE_EXP_NUMBER : TokenType.DOUBLE_NUMBER);
     }
+
+    private void readDecPart(boolean req) {
+        boolean firstUnderscore = true;
+        boolean lastUnderscore = false;
+        boolean hasNumber = false;
+
+        for (;;) {
+            if (isNumber(peek())) {
+                lastUnderscore = false;
+                firstUnderscore = false;
+                hasNumber = true;
+                next();
+            } else if (peek() == '_') {
+                if (firstUnderscore)
+                    throw new RuntimeException();
+
+                lastUnderscore = true;
+                next();
+            } else {
+                break;
+            }
+        }
+
+        if (!hasNumber && req)
+            throw new RuntimeException();
+
+        if (lastUnderscore)
+            throw new RuntimeException();
+    }
+
+    private void readSingleComment() {
+        next(2);
+        while (peek() != '\r' && peek() != '\n' && peek() !='\0')
+            next();
+        next();
+    }
+
+    private void readMultilineComment() {
+        next(2);
+        while (peek(0) != '*' && peek(1) != '/')
+            next();
+        next(2);
+    }
+
     private void skip() {
-        final char result = peek();
-        if (result == '\n') {
-            line++;
-            column = 1;
-        } else column++;
-        offset++;
+        for (;;) {
+            if (peek(0) == '/' && peek(1) == '*')
+                readMultilineComment();
+            else if (peek(0) == '/' && peek(1) == '/')
+                readSingleComment();
+            else if (peek() == ' ' || peek() == '\t' || peek() == '\n' || peek() == '\r')
+                next();
+            else
+                break;
+        }
+    }
+
+    private void next(int n) {
+        for (int i = 0; i < n; i++)
+            next();
     }
 
     private char next() {
-        skip();
-        return peek(0);
-    }
+        char result = peek();
+        if (result == '\n') {
+            line++;
+            column = 1;
+        } else {
+            column++;
+        }
+        offset++;
 
+        return result;
+    }
 
     private char peek() {
         return peek(0);
@@ -199,7 +325,6 @@ public class DefaultTokenizer implements Tokenizer, TokenizerUtils {
     public boolean isProcessed() {
         return end();
     }
-
 }
 
 record DefaultTokenizerFrame(int offset, int line, int column) {

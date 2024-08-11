@@ -93,14 +93,20 @@ public enum TokenType {
 
     IDENTIFY(TokenGroup.IDENTIFY),
 
-    DECIMAL_LITERAL(TokenGroup.LITERAL),
-    HEX_LITERAL(TokenGroup.LITERAL),
-    INTEGER_LITERAL(TokenGroup.LITERAL),
-    LONG_LITERAL(TokenGroup.LITERAL),
-    FLOAT_LITERAL(TokenGroup.LITERAL),
-    DOUBLE_LITERAL(TokenGroup.LITERAL),
+    HEX_LONG_NUMBER(TokenGroup.LITERAL),
+    BIN_LONG_NUMBER(TokenGroup.LITERAL),
+    DEC_LONG_NUMBER(TokenGroup.LITERAL),
+    HEX_NUMBER(TokenGroup.LITERAL),
+    BIN_NUMBER(TokenGroup.LITERAL),
+    DEC_NUMBER(TokenGroup.LITERAL),
+    FLOAT_NUMBER(TokenGroup.LITERAL),
+    DOUBLE_NUMBER(TokenGroup.LITERAL),
+    FLOAT_EXP_NUMBER(TokenGroup.LITERAL),
+    DOUBLE_EXP_NUMBER(TokenGroup.LITERAL),
     CHAR_LITERAL(TokenGroup.LITERAL),
     STRING_LITERAL(TokenGroup.LITERAL);
+
+
 
     @Getter
     private final TokenGroup group;
