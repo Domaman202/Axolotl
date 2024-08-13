@@ -13,10 +13,16 @@ public interface SyntaxAnalyzer {
 
     Node analyze(TokenStream tokenStream, Analyzer analyzer);
 
+    Node analyze(TokenStream tokenStream, Analyzer analyzer, Class<? extends Node>... exclude);
+
     Node analyze(TokenStream tokenStream, Class<? extends Node>... allowed);
 
     List<? extends Node> analyze(TokenStream tokenStream, TokenType delimiter, Class<? extends Node>... allowed);
 
     void addAnalyzer(Analyzer analyzer);
+
+    Object getContext();
+
+    void setContext(Object context);
 
 }

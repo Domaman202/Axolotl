@@ -106,8 +106,6 @@ public enum TokenType {
     CHAR_LITERAL(TokenGroup.LITERAL),
     STRING_LITERAL(TokenGroup.LITERAL);
 
-
-
     @Getter
     private final TokenGroup group;
 
@@ -133,6 +131,12 @@ public enum TokenType {
     public static List<TokenType> operators() {
         return Arrays.stream(TokenType.values())
                 .filter(type -> type.group == TokenGroup.OPERATOR)
+                .toList();
+    }
+
+    public static List<TokenType> delimitersAndOperators() {
+        return Arrays.stream(TokenType.values())
+                .filter(type -> type.group == TokenGroup.DELIMITER || type.group == TokenGroup.OPERATOR)
                 .toList();
     }
 

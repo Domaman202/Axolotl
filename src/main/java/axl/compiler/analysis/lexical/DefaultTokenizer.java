@@ -18,10 +18,13 @@ public class DefaultTokenizer implements Tokenizer, TokenizerUtils {
 
     private DefaultTokenizerFrame last;
 
+    private IToken lastToken;
+
     public DefaultTokenizer(@NonNull IFile file, IToken last) {
         this.file = file;
 
         if (last != null) {
+            this.lastToken = last;
             this.offset = last.getOffset();
             this.line = last.getLine();
             next(last.getLength());
@@ -36,7 +39,14 @@ public class DefaultTokenizer implements Tokenizer, TokenizerUtils {
         if (end())
             throw new RuntimeException();
 
-        DefaultToken token = null; // TODO tokenize
+        DefaultToken token;
+
+        if (isIdentifierStart(peek()))
+            token = readIdentifyOrKeyword();
+        else if (isNumber(peek()) || peek() == '.')
+            token = readNumber();
+        else
+            token = readDelimiterOrOperator();
 
         token.offset = last.offset();
         token.column = last.column();
@@ -44,10 +54,11 @@ public class DefaultTokenizer implements Tokenizer, TokenizerUtils {
         token.length = this.offset - last.offset();
 
         skip();
+        lastToken = token;
         return token;
     }
 
-    private IToken readIdentifyOrKeyword() {
+    private DefaultToken readIdentifyOrKeyword() {
         do {
             next();
         } while (isIdentifierPart(peek()));
@@ -56,7 +67,7 @@ public class DefaultTokenizer implements Tokenizer, TokenizerUtils {
         return new DefaultToken(type == null ? TokenType.IDENTIFY : type);
     }
 
-    private IToken readNumber() {
+    private DefaultToken readNumber() {
         if (peek(0) == '0') {
             if (peek(1) == 'x' || peek(1) == 'X')
                 return readHexNumber();
@@ -64,7 +75,7 @@ public class DefaultTokenizer implements Tokenizer, TokenizerUtils {
                 return readBinNumber();
             else if (peek(1) == '.')
                 return readFloatingPointNumber();
-            else if (peek(1) == '_' && isNumber(peek(1)))
+            else if (peek(1) == '_' || isNumber(peek(1)))
                 return readDecNumber();
 
             next();
@@ -83,7 +94,7 @@ public class DefaultTokenizer implements Tokenizer, TokenizerUtils {
         return readDecNumber();
     }
 
-    private IToken readHexNumber() {
+    private DefaultToken readHexNumber() {
         next(2);
         int cnt = 0;
         boolean zeroStart = true;
@@ -129,7 +140,7 @@ public class DefaultTokenizer implements Tokenizer, TokenizerUtils {
         return new DefaultToken(TokenType.HEX_NUMBER);
     }
 
-    private IToken readBinNumber() {
+    private DefaultToken readBinNumber() {
         next(2);
         int cnt = 0;
         boolean zeroStart = true;
@@ -175,13 +186,10 @@ public class DefaultTokenizer implements Tokenizer, TokenizerUtils {
         return new DefaultToken(TokenType.BIN_NUMBER);
     }
 
-    private IToken readDecNumber() {
-        if (!isNumber(next()))
-            throw new RuntimeException();
-
+    private DefaultToken readDecNumber() {
         readDecPart(true);
 
-        if (peek() == '.')
+        if (peek() == '.' || peek() == 'E' || peek() == 'e')
             return readFloatingPointNumber();
 
         if (peek() == 'L' || peek() == 'l') {
@@ -192,7 +200,11 @@ public class DefaultTokenizer implements Tokenizer, TokenizerUtils {
         return new DefaultToken(TokenType.DEC_NUMBER);
     }
 
-    private IToken readFloatingPointNumber() {
+    private DefaultToken readFloatingPointNumber() {
+        this.offset = last.offset();
+        this.column = last.column();
+        this.line = last.line();
+
         boolean exp = false;
         readDecPart(false);
 
@@ -251,18 +263,46 @@ public class DefaultTokenizer implements Tokenizer, TokenizerUtils {
             throw new RuntimeException();
     }
 
-    private void readSingleComment() {
-        next(2);
-        while (peek() != '\r' && peek() != '\n' && peek() !='\0')
-            next();
-        next();
+    private DefaultToken readDelimiterOrOperator() {
+        int currentLength = 0;
+        TokenType current = null;
+
+        for (TokenType type: TokenType.delimitersAndOperators()) {
+            String representation = type.getRepresentation();
+            if (!isOperator(representation))
+                continue;
+
+            if (currentLength < representation.length()) {
+                currentLength = representation.length();
+                current = type;
+            }
+        }
+
+        if (current == null)
+            throw new RuntimeException();
+
+        if (current == TokenType.MINUS) {
+            if (
+                    lastToken == null ||
+                    lastToken.getType().getGroup() == TokenGroup.OPERATOR ||
+                    lastToken.getType() == TokenType.LEFT_PARENT ||
+                    lastToken.getType() == TokenType.LEFT_SQUARE ||
+                    lastToken.getType() == TokenType.RETURN ||
+                    lastToken.getType() == TokenType.THIS
+            )
+                current = TokenType.UNARY_MINUS;
+        }
+
+        next(currentLength);
+        return new DefaultToken(current);
     }
 
-    private void readMultilineComment() {
-        next(2);
-        while (peek(0) != '*' && peek(1) != '/')
-            next();
-        next(2);
+    private boolean isOperator(String representation) {
+        for (int i = 0; i < representation.length(); i++)
+            if (peek(i) != representation.charAt(i))
+                return false;
+
+        return true;
     }
 
     private void skip() {
@@ -276,6 +316,26 @@ public class DefaultTokenizer implements Tokenizer, TokenizerUtils {
             else
                 break;
         }
+    }
+
+    private void readSingleComment() {
+        next(2);
+        while (peek() != '\r' && peek() != '\n' && peek() !='\0')
+            next();
+        next();
+    }
+
+    private void readMultilineComment() {
+        next(2);
+
+        while (peek(0) != '*' && peek(1) != '/') {
+            if (end())
+                throw new RuntimeException(); // TODO
+
+            next();
+        }
+
+        next(2);
     }
 
     private void next(int n) {
@@ -315,10 +375,10 @@ public class DefaultTokenizer implements Tokenizer, TokenizerUtils {
     private String slice() {
         return getFile()
                 .getContent()
-                .subSequence(
+                .substring(
                         last.offset(),
                         this.offset
-                ).toString();
+                );
     }
 
     @Override

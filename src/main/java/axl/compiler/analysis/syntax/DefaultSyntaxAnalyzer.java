@@ -6,6 +6,8 @@ import axl.compiler.analysis.lexical.utils.Frame;
 import axl.compiler.analysis.lexical.utils.TokenStream;
 import axl.compiler.analysis.syntax.ast.Node;
 import axl.compiler.analysis.syntax.utils.Analyzer;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -15,6 +17,10 @@ import java.util.Set;
 public class DefaultSyntaxAnalyzer implements SyntaxAnalyzer {
 
     private final Set<Analyzer> analyzers = new HashSet<>();
+
+    @Getter
+    @Setter
+    private Object context;
 
     @Override
     @SuppressWarnings("all")
@@ -28,6 +34,28 @@ public class DefaultSyntaxAnalyzer implements SyntaxAnalyzer {
     }
 
     @Override
+    public Node analyze(TokenStream tokenStream, Analyzer analyzerAllowed, Class<? extends Node>... exclude) {
+        Class<? extends Node>[] allowed = analyzerAllowed.getAllowed();
+
+        Node node = null;
+        Frame frame;
+
+        for (Analyzer analyzer : analyzers) {
+            if (!canCast(analyzer.getTarget(), allowed) || List.of(exclude).contains(analyzer.getTarget()))
+                continue;
+
+            frame = tokenStream.createFrame();
+            node = analyzer.analyze(this, tokenStream);
+            if (node != null)
+                break;
+
+            tokenStream.restoreFrame(frame);
+        }
+
+        return node;
+    }
+
+    @Override
     @SuppressWarnings("all")
     public final Node analyze(TokenStream tokenStream, Class<? extends Node>... allowed) {
         Node node = null;
@@ -37,11 +65,13 @@ public class DefaultSyntaxAnalyzer implements SyntaxAnalyzer {
             if (!canCast(analyzer.getTarget(), allowed))
                 continue;
 
+            Object context = this.context;
             frame = tokenStream.createFrame();
             node = analyzer.analyze(this, tokenStream);
             if (node != null)
                 break;
 
+            this.context = context;
             tokenStream.restoreFrame(frame);
         }
 

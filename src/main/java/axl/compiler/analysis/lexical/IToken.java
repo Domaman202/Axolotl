@@ -1,5 +1,7 @@
 package axl.compiler.analysis.lexical;
 
+import axl.compiler.IFile;
+
 public interface IToken {
 
     int getOffset();
@@ -11,5 +13,7 @@ public interface IToken {
     int getColumn();
 
     TokenType getType();
+
+    String getContent(IFile file);
 
 }

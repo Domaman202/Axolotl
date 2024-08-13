@@ -1,12 +1,12 @@
 package axl.compiler.analysis.lexical.utils;
 
 import axl.compiler.IFile;
-import axl.compiler.analysis.lexical.DefaultTokenizer;
 import axl.compiler.analysis.lexical.IToken;
 import axl.compiler.analysis.lexical.Tokenizer;
 import lombok.Getter;
 import lombok.NonNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class DefaultTokenStream implements TokenStream {
@@ -22,13 +22,10 @@ public class DefaultTokenStream implements TokenStream {
 
     private boolean processed;
 
-    public DefaultTokenStream(@NonNull IFile file, @NonNull List<IToken> tokens) {
+    public DefaultTokenStream(@NonNull IFile file, @NonNull List<IToken> tokens, Tokenizer tokenizer) {
         this.file = file;
         this.tokens = tokens;
-        this.tokenizer = new DefaultTokenizer(
-                file,
-                tokens.isEmpty() ? null : tokens.getLast()
-        );
+        this.tokenizer = tokenizer;
     }
 
     private DefaultTokenStream(@NonNull IFile file, @NonNull List<IToken> tokens, boolean processed) {
@@ -46,7 +43,7 @@ public class DefaultTokenStream implements TokenStream {
         if (processed)
             return null;
 
-        tokens.add(this.tokenize());
+        tokenize();
         return next();
     }
 
@@ -58,13 +55,13 @@ public class DefaultTokenStream implements TokenStream {
         if (processed)
             return null;
 
-        tokens.add(this.tokenize());
+        tokenize();
         return get();
     }
 
     @Override
     public boolean hasNext() {
-        return this.iterator + 1 < this.tokens.size() || this.processed;
+        return !this.processed || this.iterator < tokens.size();
     }
 
     @NonNull
@@ -87,12 +84,13 @@ public class DefaultTokenStream implements TokenStream {
         return new DefaultTokenStream(file, tokens, true);
     }
 
-    @NonNull
-    private IToken tokenize() {
-        IToken token = tokenizer.tokenize();
-
-        processed = tokenizer.isProcessed();
-        return token;
+    @Override
+    public List<IToken> copy() {
+        return new ArrayList<>(this.tokens);
     }
 
+    public void tokenize() {
+        this.tokens.add(tokenizer.tokenize());
+        processed = tokenizer.isProcessed();
+    }
 }

@@ -3,7 +3,7 @@ package axl.compiler.analysis.lexical.utils;
 public interface TokenizerUtils {
 
     default boolean isIdentifierStart(char current) {
-        return (Character.isLetter(current) || (current == '_') || (current == '$'));
+        return Character.isLetter(current) || current == '_';
     }
 
     default boolean isIdentifierPart(char current) {
@@ -18,10 +18,6 @@ public interface TokenizerUtils {
         return ('0' <= current && current <= '9')
                 || ('a' <= current && current <= 'f')
                 || ('A' <= current && current <= 'F');
-    }
-
-    default boolean isOctNumber(char current) {
-        return ('0' <= current && current <= '7');
     }
 
     default boolean isBinNumber(char current) {

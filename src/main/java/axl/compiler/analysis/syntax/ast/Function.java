@@ -34,7 +34,7 @@ public class Function extends Node {
 
         @Override
         public Node analyze(SyntaxAnalyzer syntaxAnalyzer, TokenStream tokenStream) {
-            List<Annotation> annotations = (List<Annotation>) syntaxAnalyzer.analyze(tokenStream, Annotation.class, null);
+            List<Annotation> annotations = (List<Annotation>) syntaxAnalyzer.analyze(tokenStream, Annotation.class);
 
             if (!tokenStream.hasNext())
                 return null;
@@ -64,8 +64,10 @@ public class Function extends Node {
                 return null;
 
             Type type = null;
-            if (tokenStream.next().getType() == TokenType.GREATER)
+            if (tokenStream.get().getType() == TokenType.GREATER) {
+                tokenStream.next();
                 type = (Type) syntaxAnalyzer.analyze(tokenStream, Type.class);
+            }
 
             Node body = syntaxAnalyzer.analyze(tokenStream, Statement.class, Expression.class);
             if (body == null)

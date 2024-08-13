@@ -1,6 +1,10 @@
 package axl.compiler.analysis.lexical;
 
+import axl.compiler.IFile;
 import lombok.Getter;
+import sun.misc.Unsafe;
+
+import java.lang.reflect.Field;
 
 @Getter
 public class DefaultToken implements IToken {
@@ -16,8 +20,12 @@ public class DefaultToken implements IToken {
     }
 
     @Override
-    public TokenType getType() {
-        return null;
+    public String getContent(IFile file) {
+        return file
+                .getContent()
+                .substring(
+                        this.offset,
+                        this.offset + this.length
+                );
     }
-
 }
