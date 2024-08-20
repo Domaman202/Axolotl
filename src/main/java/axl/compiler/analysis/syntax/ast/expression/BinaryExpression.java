@@ -17,6 +17,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class BinaryExpression extends Expression {
+
     private final IToken operation;
     private final Expression left;
     private final Expression right;

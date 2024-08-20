@@ -14,6 +14,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class BracketsExpression extends Expression {
+
     private final Expression expression;
 
     @SubAnalyzer(target = BracketsExpression.class)

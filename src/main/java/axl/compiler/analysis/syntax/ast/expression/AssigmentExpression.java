@@ -14,6 +14,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class AssigmentExpression extends Expression {
+
     private final IToken operation;
     private final Expression left;
     private final Expression right;

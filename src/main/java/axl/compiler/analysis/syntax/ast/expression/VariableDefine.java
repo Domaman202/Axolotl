@@ -1,7 +1,6 @@
 package axl.compiler.analysis.syntax.ast.expression;
 
 import axl.compiler.analysis.lexical.IToken;
-import axl.compiler.analysis.lexical.utils.Frame;
 import axl.compiler.analysis.lexical.utils.TokenStream;
 import axl.compiler.analysis.syntax.SyntaxAnalyzer;
 import axl.compiler.analysis.syntax.ast.Node;
@@ -15,6 +14,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class VariableDefine extends Expression {
+
     private final IToken variable;
     private final Expression value;
     private final IToken type;

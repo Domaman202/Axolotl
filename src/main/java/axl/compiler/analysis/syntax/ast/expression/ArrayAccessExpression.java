@@ -15,6 +15,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class ArrayAccessExpression extends Expression {
+
     private final Expression array;
     private final Expression index;
 

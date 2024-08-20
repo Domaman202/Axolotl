@@ -24,34 +24,7 @@ public class DefaultSyntaxAnalyzer implements SyntaxAnalyzer {
     @Override
     @SuppressWarnings("all")
     public Node analyze(TokenStream tokenStream) {
-        return analyze(tokenStream, new Class[]{Node.class});
-    }
-
-    @Override
-    public Node analyze(TokenStream tokenStream, Analyzer analyzer) {
-        return analyze(tokenStream, analyzer.getAllowed());
-    }
-
-    @Override
-    public Node analyze(TokenStream tokenStream, Analyzer analyzerAllowed, Class<? extends Node>... exclude) {
-        Class<? extends Node>[] allowed = analyzerAllowed.getAllowed();
-
-        Node node = null;
-        Frame frame;
-
-        for (Analyzer analyzer : analyzers) {
-            if (!canCast(analyzer.getTarget(), allowed) || List.of(exclude).contains(analyzer.getTarget()))
-                continue;
-
-            frame = tokenStream.createFrame();
-            node = analyzer.analyze(this, tokenStream);
-            if (node != null)
-                break;
-
-            tokenStream.restoreFrame(frame);
-        }
-
-        return node;
+        return analyze(tokenStream, Node.class);
     }
 
     @Override

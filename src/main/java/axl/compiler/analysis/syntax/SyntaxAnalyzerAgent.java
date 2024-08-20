@@ -41,6 +41,7 @@ public class SyntaxAnalyzerAgent {
         syntaxAnalyzer.addAnalyzer(new InstanceAccessExpression.InstanceAccessExpressionAnalyzer());
         syntaxAnalyzer.addAnalyzer(new BracketsExpression.BracketsExpressionAnalyzer());
         // высокий приоритет ^^^
+
         // так надо VVV
         syntaxAnalyzer.addAnalyzer(new Number.NumberAnalyzer());
         syntaxAnalyzer.addAnalyzer(new VariableUseExpression.VariableUseAnalyzer());
