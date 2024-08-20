@@ -6,17 +6,16 @@ import axl.compiler.analysis.lexical.utils.Frame;
 import axl.compiler.analysis.lexical.utils.TokenStream;
 import axl.compiler.analysis.syntax.ast.Node;
 import axl.compiler.analysis.syntax.utils.Analyzer;
+import axl.compiler.analysis.syntax.utils.LinkedList;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class DefaultSyntaxAnalyzer implements SyntaxAnalyzer {
 
-    private final Set<Analyzer> analyzers = new HashSet<>();
+    private final List<Analyzer> analyzers = new ArrayList<>();
 
     @Getter
     @Setter
@@ -107,6 +106,30 @@ public class DefaultSyntaxAnalyzer implements SyntaxAnalyzer {
         }
 
         return nodes;
+    }
+
+    @Override
+    public Node analyzeExpression(TokenStream tokenStream, LinkedList<Analyzer> without) {
+        Node node = null;
+        Frame frame;
+
+        boolean flag = without != null;
+        for (Analyzer analyzer : analyzers) {
+            if (flag) {
+                if (without.contains(analyzer) && without.value == analyzer)
+                    flag = false;
+                continue;
+            }
+
+            frame = tokenStream.createFrame();
+            node = analyzer.analyzeExpression(this, tokenStream, without);
+            if (node != null)
+                break;
+
+            tokenStream.restoreFrame(frame);
+        }
+
+        return node;
     }
 
     @Override
