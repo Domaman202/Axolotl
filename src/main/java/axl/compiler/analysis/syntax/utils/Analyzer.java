@@ -5,6 +5,8 @@ import axl.compiler.analysis.syntax.SyntaxAnalyzer;
 import axl.compiler.analysis.syntax.ast.Node;
 import lombok.Getter;
 
+import java.util.List;
+
 public abstract class Analyzer {
 
     {
@@ -24,4 +26,7 @@ public abstract class Analyzer {
 
     public abstract Node analyze(SyntaxAnalyzer syntaxAnalyzer, TokenStream tokenStream);
 
+    public Node analyzeExpression(SyntaxAnalyzer syntaxAnalyzer, TokenStream tokenStream, LinkedList<Analyzer> without) {
+        return analyze(syntaxAnalyzer, tokenStream);
+    }
 }

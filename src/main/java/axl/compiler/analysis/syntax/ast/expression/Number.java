@@ -11,13 +11,11 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class Number extends MathExpression {
-
+public class Number extends Expression {
     private IToken number;
 
     @SubAnalyzer(target = Number.class)
     public static class NumberAnalyzer extends Analyzer {
-
         @Override
         public Node analyze(SyntaxAnalyzer syntaxAnalyzer, TokenStream tokenStream) {
             return switch (tokenStream.get().getType()) {
