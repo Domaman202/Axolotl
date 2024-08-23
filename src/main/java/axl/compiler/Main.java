@@ -24,35 +24,16 @@ public class Main {
         File fileAXL = new File(args[0]);
         String filename = fileAXL.getName();
         String content = Files.readString(fileAXL.toPath());
-
-        file = (new IFile() {
-            final List<IToken> tokens = new ArrayList<>();
-            final Tokenizer tokenizer = new DefaultTokenizer(this, null);
-
-            @Override
-            public String getName() {
-                return filename;
-            }
-
-            @Override
-            public String getContent() {
-                return content;
-            }
-
-            @Override
-            public TokenStream createTokenStream() {
-                return new DefaultTokenStream(this, tokens, tokenizer);
-            }
-        });
+        file = new axl.compiler.File(filename, content);
 
         TokenStream stream = file.createTokenStream();
         SyntaxAnalyzer syntaxAnalyzer = SyntaxAnalyzerAgent.createSyntaxAnalyzer();
-        Node add = syntaxAnalyzer.analyze(stream);
-
         long point = System.currentTimeMillis();
+        Node add = syntaxAnalyzer.analyze(stream);
+        long time = ((int) (System.currentTimeMillis() - point));
+
         System.out.println(formatString(add.toString()));
 
-        long time = ((int) (System.currentTimeMillis() - point));
         System.out.println((int) time + " ms");
 
 //        while (stream.hasNext())

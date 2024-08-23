@@ -15,6 +15,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class InstanceAccessExpression extends Expression {
+
     private final Expression instance;
     private final IToken access;
 

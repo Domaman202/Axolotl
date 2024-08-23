@@ -18,7 +18,7 @@ public class Block extends Statement {
 
     List<Statement> statements;
 
-    @SubAnalyzer(target = Block.class, allowed = Statement.class)
+    @SubAnalyzer(target = Block.class)
     public static class BlockAnalyzer extends Analyzer {
 
         @Override
@@ -40,7 +40,7 @@ public class Block extends Statement {
                     break;
                 }
 
-                statements.add((Statement) syntaxAnalyzer.analyze(tokenStream, this));
+                statements.add((Statement) syntaxAnalyzer.analyze(tokenStream, Statement.class));
             }
 
             return new Block(statements);

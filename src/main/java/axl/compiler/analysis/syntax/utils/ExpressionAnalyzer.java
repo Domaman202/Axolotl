@@ -5,6 +5,7 @@ import axl.compiler.analysis.syntax.SyntaxAnalyzer;
 import axl.compiler.analysis.syntax.ast.Node;
 
 public abstract class ExpressionAnalyzer extends Analyzer {
+
     public Node analyze(SyntaxAnalyzer syntaxAnalyzer, TokenStream tokenStream) {
         return this.analyzeExpression(syntaxAnalyzer, tokenStream, null);
     }

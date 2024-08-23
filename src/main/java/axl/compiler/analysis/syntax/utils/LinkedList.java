@@ -1,6 +1,7 @@
 package axl.compiler.analysis.syntax.utils;
 
 public class LinkedList<T> {
+
     private final LinkedList<T> prev;
     public final T value;
 

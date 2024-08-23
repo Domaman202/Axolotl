@@ -14,18 +14,21 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class UnaryExpression extends Expression {
+
     private final boolean prefix;
     private final IToken operation;
     private final Expression expression;
 
     @SubAnalyzer(target = UnaryExpression.class)
     public static class UnaryExpressionPostfixAnalyzer extends ExpressionAnalyzer {
+
         @Override
         public Node analyzeExpression(SyntaxAnalyzer syntaxAnalyzer, TokenStream tokenStream, LinkedList<Analyzer> without) {
             Node leftNode = syntaxAnalyzer.analyzeExpression(tokenStream, new LinkedList<>(without, this));
             IToken token = tokenStream.get();
             if (token == null)
                 return leftNode;
+
             return switch (token.getType()) {
                 case INCREMENT, DECREMENT -> {
                     tokenStream.next();
@@ -38,6 +41,7 @@ public class UnaryExpression extends Expression {
 
     @SubAnalyzer(target = UnaryExpression.class)
     public static class UnaryExpressionPrefixAnalyzer extends ExpressionAnalyzer {
+
         @Override
         public Node analyzeExpression(SyntaxAnalyzer syntaxAnalyzer, TokenStream tokenStream, LinkedList<Analyzer> without) {
             IToken token = tokenStream.get();
