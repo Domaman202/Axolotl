@@ -79,9 +79,6 @@ public class DefaultSyntaxAnalyzer implements SyntaxAnalyzer {
 
     @Override
     public Expression analyzeExpression(TokenStream tokenStream, LinkedList<Analyzer> without) {
-        Expression node = null;
-        Frame frame;
-
         boolean flag = without != null;
         for (Analyzer analyzer : analyzers) {
             if (flag) {
@@ -90,15 +87,13 @@ public class DefaultSyntaxAnalyzer implements SyntaxAnalyzer {
                 continue;
             }
 
-            frame = tokenStream.createFrame();
-            node = analyzer.analyzeExpression(this, tokenStream, without);
-            if (node != null)
-                break;
-
+            Frame frame = tokenStream.createFrame();
+            Expression expr = analyzer.analyzeExpression(this, tokenStream, without);
+            if (expr != null)
+                return expr;
             tokenStream.restoreFrame(frame);
         }
-
-        return node;
+        return null;
     }
 
     @Override

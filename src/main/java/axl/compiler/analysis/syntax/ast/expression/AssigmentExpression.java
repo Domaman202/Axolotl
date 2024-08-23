@@ -23,10 +23,12 @@ public class AssigmentExpression extends Expression {
     public static class AssigmentExpressionAnalyzer extends ExpressionAnalyzer {
         @Override
         public Expression analyzeExpression(SyntaxAnalyzer syntaxAnalyzer, TokenStream tokenStream, LinkedList<Analyzer> without) {
-            Expression leftNode = syntaxAnalyzer.analyzeExpression(tokenStream, new LinkedList<>(without, this));
+            Expression left = syntaxAnalyzer.analyzeExpression(tokenStream, new LinkedList<>(without, this));
+            if (left == null)
+                return null;
             IToken token = tokenStream.get();
             if (token == null)
-                return leftNode;
+                return left;
             return switch (token.getType()) {
                 case ASSIGN,
                      PLUS_ASSIGN,
@@ -40,11 +42,10 @@ public class AssigmentExpression extends Expression {
                      BIT_SHIFT_LEFT_ASSIGN,
                      BIT_SHIFT_RIGHT_ASSIGN -> {
                     IToken operation = tokenStream.next();
-                    Expression left = (Expression) leftNode;
-                    Expression right = (Expression) syntaxAnalyzer.analyzeExpression(tokenStream, without);
+                    Expression right = syntaxAnalyzer.analyzeExpression(tokenStream, without);
                     yield new BinaryExpression(operation, left, right);
                 }
-                default -> leftNode;
+                default -> left;
             };
         }
     }

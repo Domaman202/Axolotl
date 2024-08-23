@@ -1,10 +1,9 @@
 package axl.compiler.analysis.syntax.ast.expression;
 
-import axl.compiler.analysis.lexical.IToken;
 import axl.compiler.analysis.lexical.TokenType;
 import axl.compiler.analysis.lexical.utils.TokenStream;
+import axl.compiler.analysis.lexical.utils.TokenStreamUtils;
 import axl.compiler.analysis.syntax.SyntaxAnalyzer;
-import axl.compiler.analysis.syntax.ast.Node;
 import axl.compiler.analysis.syntax.utils.Analyzer;
 import axl.compiler.analysis.syntax.utils.ExpressionAnalyzer;
 import axl.compiler.analysis.syntax.utils.LinkedList;
@@ -15,7 +14,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class ArrayAccessExpression extends Expression {
-
     private final Expression array;
     private final Expression index;
 
@@ -23,15 +21,13 @@ public class ArrayAccessExpression extends Expression {
     public static class ArrayAccessExpressionAnalyzer extends ExpressionAnalyzer {
         @Override
         public Expression analyzeExpression(SyntaxAnalyzer syntaxAnalyzer, TokenStream tokenStream, LinkedList<Analyzer> without) {
-            Expression leftNode = syntaxAnalyzer.analyzeExpression(tokenStream, new LinkedList<>(without, this));
-            IToken token = tokenStream.get();
-            if (token == null || token.getType() != TokenType.LEFT_SQUARE)
-                return leftNode;
-            tokenStream.next();
+            Expression left = syntaxAnalyzer.analyzeExpression(tokenStream, new LinkedList<>(without, this));
+            if (left == null || TokenStreamUtils.nextTokenTypeNot(tokenStream, TokenType.LEFT_SQUARE))
+                return null;
             Expression index = syntaxAnalyzer.analyzeExpression(tokenStream, without);
             if (tokenStream.next().getType() != TokenType.RIGHT_SQUARE)
                 throw new RuntimeException(); // todo: сообщить пользователю о необходимости закрыть скобку
-            return new ArrayAccessExpression(leftNode, index);
+            return new ArrayAccessExpression(left, index);
         }
     }
 

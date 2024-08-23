@@ -1,15 +1,1 @@
-
-1+-++x
-
-//@main() {
-//    println(div(1, 5))
-//}
-//
-//fn div(a: Double, b: Double) > Double? {
-//    if (b == 0)
-//        return null
-//
-//    return a / b
-//}
-
-
+obj[i](12, 21)

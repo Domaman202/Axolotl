@@ -35,7 +35,6 @@ public class BinaryExpression extends Expression {
             Expression left = syntaxAnalyzer.analyzeExpression(tokenStream, new LinkedList<>(without, this));
             if (left == null)
                 return null;
-
             IToken token = tokenStream.get();
             if (token == null || !tokenTypes.contains(token.getType()))
                 return left;
@@ -43,7 +42,6 @@ public class BinaryExpression extends Expression {
             Expression right = syntaxAnalyzer.analyzeExpression(tokenStream, without);
             if (right == null)
                 return null;
-
             return new BinaryExpression(operation, left, right);
         }
     }
