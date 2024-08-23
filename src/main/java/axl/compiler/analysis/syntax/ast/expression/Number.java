@@ -12,7 +12,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class Number extends Expression {
-
     private IToken number;
 
     @SubAnalyzer(target = Number.class)

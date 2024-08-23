@@ -10,4 +10,6 @@ public final class DefaultFrame implements Frame {
     @Getter
     private int tokenId;
 
+    public static class TokenStreamUtils {
+    }
 }

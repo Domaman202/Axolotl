@@ -21,7 +21,7 @@ public class BracketsExpression extends Expression {
         @Override
         public Expression analyzeExpression(SyntaxAnalyzer syntaxAnalyzer, TokenStream tokenStream, LinkedList<Analyzer> without) {
             if (tokenStream.next().getType() == TokenType.LEFT_PARENT) {
-                Expression expression = (Expression) syntaxAnalyzer.analyze(tokenStream);
+                Expression expression = syntaxAnalyzer.analyzeExpression(tokenStream, null);
                 if (tokenStream.next().getType() != TokenType.RIGHT_PARENT)
                     throw new RuntimeException(); // todo: уведомить пользователя о том ,что он забыл закрыть скобку
                 return new BracketsExpression(expression);
