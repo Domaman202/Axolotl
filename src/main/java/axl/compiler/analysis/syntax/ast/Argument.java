@@ -4,7 +4,6 @@ import axl.compiler.analysis.lexical.IToken;
 import axl.compiler.analysis.lexical.TokenType;
 import axl.compiler.analysis.lexical.utils.TokenStream;
 import axl.compiler.analysis.syntax.SyntaxAnalyzer;
-import axl.compiler.analysis.syntax.ast.expression.Type;
 import axl.compiler.analysis.syntax.utils.Analyzer;
 import axl.compiler.analysis.syntax.utils.SubAnalyzer;
 import lombok.AllArgsConstructor;

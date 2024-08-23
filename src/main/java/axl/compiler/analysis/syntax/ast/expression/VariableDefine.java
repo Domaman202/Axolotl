@@ -3,7 +3,6 @@ package axl.compiler.analysis.syntax.ast.expression;
 import axl.compiler.analysis.lexical.IToken;
 import axl.compiler.analysis.lexical.utils.TokenStream;
 import axl.compiler.analysis.syntax.SyntaxAnalyzer;
-import axl.compiler.analysis.syntax.ast.Node;
 import axl.compiler.analysis.syntax.utils.Analyzer;
 import axl.compiler.analysis.syntax.utils.ExpressionAnalyzer;
 import axl.compiler.analysis.syntax.utils.LinkedList;
@@ -22,7 +21,7 @@ public class VariableDefine extends Expression {
     @SubAnalyzer(target = VariableDefine.class)
     public static class VariableDefineAnalyzer extends ExpressionAnalyzer {
         @Override
-        public Node analyzeExpression(SyntaxAnalyzer syntaxAnalyzer, TokenStream tokenStream, LinkedList<Analyzer> without) {
+        public Expression analyzeExpression(SyntaxAnalyzer syntaxAnalyzer, TokenStream tokenStream, LinkedList<Analyzer> without) {
             return switch (tokenStream.get().getType()) {
                 case VAL, VAR ->  {
                     tokenStream.next();

@@ -22,15 +22,16 @@ public class InstanceAccessExpression extends Expression {
     @SubAnalyzer(target = InstanceAccessExpression.class)
     public static class InstanceAccessExpressionAnalyzer extends ExpressionAnalyzer {
         @Override
-        public Node analyzeExpression(SyntaxAnalyzer syntaxAnalyzer, TokenStream tokenStream, LinkedList<Analyzer> without) {
-            Node leftNode = syntaxAnalyzer.analyzeExpression(tokenStream, new LinkedList<>(without, this));
+        public Expression analyzeExpression(SyntaxAnalyzer syntaxAnalyzer, TokenStream tokenStream, LinkedList<Analyzer> without) {
+            Expression leftNode = syntaxAnalyzer.analyzeExpression(tokenStream, new LinkedList<>(without, this));
+
             IToken token = tokenStream.get();
             if (token == null || token.getType() != TokenType.DOT)
                 return leftNode;
+
             tokenStream.next();
-            Expression instance = (Expression) leftNode;
             IToken access = tokenStream.next();
-            return new InstanceAccessExpression(instance, access);
+            return new InstanceAccessExpression(leftNode, access);
         }
     }
 

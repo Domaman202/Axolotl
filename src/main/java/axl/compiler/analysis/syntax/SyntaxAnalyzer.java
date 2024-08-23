@@ -3,6 +3,7 @@ package axl.compiler.analysis.syntax;
 import axl.compiler.analysis.lexical.TokenType;
 import axl.compiler.analysis.lexical.utils.TokenStream;
 import axl.compiler.analysis.syntax.ast.Node;
+import axl.compiler.analysis.syntax.ast.expression.Expression;
 import axl.compiler.analysis.syntax.utils.Analyzer;
 import axl.compiler.analysis.syntax.utils.LinkedList;
 
@@ -16,7 +17,9 @@ public interface SyntaxAnalyzer {
 
     List<? extends Node> analyze(TokenStream tokenStream, TokenType delimiter, Class<? extends Node>... allowed);
 
-    Node analyzeExpression(TokenStream tokenStream, LinkedList<Analyzer> without);
+    Expression analyzeExpression(TokenStream tokenStream, LinkedList<Analyzer> without);
+
+    List<? extends Expression> analyzeExpression(TokenStream tokenStream, TokenType delimiter, LinkedList<Analyzer> without);
 
     void addAnalyzer(Analyzer analyzer);
 

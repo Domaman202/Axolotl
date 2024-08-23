@@ -3,9 +3,8 @@ package axl.compiler.analysis.syntax.utils;
 import axl.compiler.analysis.lexical.utils.TokenStream;
 import axl.compiler.analysis.syntax.SyntaxAnalyzer;
 import axl.compiler.analysis.syntax.ast.Node;
+import axl.compiler.analysis.syntax.ast.expression.Expression;
 import lombok.Getter;
-
-import java.util.List;
 
 public abstract class Analyzer {
 
@@ -26,7 +25,10 @@ public abstract class Analyzer {
 
     public abstract Node analyze(SyntaxAnalyzer syntaxAnalyzer, TokenStream tokenStream);
 
-    public Node analyzeExpression(SyntaxAnalyzer syntaxAnalyzer, TokenStream tokenStream, LinkedList<Analyzer> without) {
-        return analyze(syntaxAnalyzer, tokenStream);
+    public Expression analyzeExpression(SyntaxAnalyzer syntaxAnalyzer, TokenStream tokenStream, LinkedList<Analyzer> without) {
+        if (getTarget().isAssignableFrom(Expression.class))
+            return null;
+
+        return (Expression) analyze(syntaxAnalyzer, tokenStream);
     }
 }

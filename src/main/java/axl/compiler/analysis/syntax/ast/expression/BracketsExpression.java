@@ -3,7 +3,6 @@ package axl.compiler.analysis.syntax.ast.expression;
 import axl.compiler.analysis.lexical.TokenType;
 import axl.compiler.analysis.lexical.utils.TokenStream;
 import axl.compiler.analysis.syntax.SyntaxAnalyzer;
-import axl.compiler.analysis.syntax.ast.Node;
 import axl.compiler.analysis.syntax.utils.Analyzer;
 import axl.compiler.analysis.syntax.utils.ExpressionAnalyzer;
 import axl.compiler.analysis.syntax.utils.LinkedList;
@@ -20,7 +19,7 @@ public class BracketsExpression extends Expression {
     @SubAnalyzer(target = BracketsExpression.class)
     public static class BracketsExpressionAnalyzer extends ExpressionAnalyzer {
         @Override
-        public Node analyzeExpression(SyntaxAnalyzer syntaxAnalyzer, TokenStream tokenStream, LinkedList<Analyzer> without) {
+        public Expression analyzeExpression(SyntaxAnalyzer syntaxAnalyzer, TokenStream tokenStream, LinkedList<Analyzer> without) {
             if (tokenStream.next().getType() == TokenType.LEFT_PARENT) {
                 Expression expression = (Expression) syntaxAnalyzer.analyze(tokenStream);
                 if (tokenStream.next().getType() != TokenType.RIGHT_PARENT)
