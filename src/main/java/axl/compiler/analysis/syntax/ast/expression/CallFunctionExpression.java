@@ -29,7 +29,9 @@ public class CallFunctionExpression extends Expression {
             if (left == null || TokenStreamUtils.nextTokenTypeNot(tokenStream, TokenType.LEFT_PARENT))
                 return null;
             List<Expression> args = new ArrayList<>();
-            if (tokenStream.get().getType() != TokenType.RIGHT_PARENT) {
+            if (tokenStream.get().getType() == TokenType.RIGHT_PARENT)
+                tokenStream.next();
+            else {
                 while (true) {
                     Expression expr = syntaxAnalyzer.analyzeExpression(tokenStream, null);
                     if (expr == null)
