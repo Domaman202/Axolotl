@@ -36,7 +36,7 @@ public class SyntaxAnalyzerAgent {
         syntaxAnalyzer.addAnalyzer(new BinaryExpression.BinaryExpressionAnalyzer(List.of(TokenType.PLUS, TokenType.MINUS)));
         syntaxAnalyzer.addAnalyzer(new BinaryExpression.BinaryExpressionAnalyzer(List.of(TokenType.MULTIPLY, TokenType.DIVIDE, TokenType.MODULO)));
         syntaxAnalyzer.addAnalyzer(new UnaryExpression.UnaryExpressionPrefixAnalyzer());
-        syntaxAnalyzer.addAnalyzer(new UnaryExpression.UnaryExpressionPostfixAnalyzer());
+        syntaxAnalyzer.addAnalyzer(new UnaryExpression.UnaryExpressionIncrementDecrementAnalyzer());
         syntaxAnalyzer.addAnalyzer(new ArrayAccessExpression.ArrayAccessExpressionAnalyzer());
         syntaxAnalyzer.addAnalyzer(new InstanceAccessExpression.InstanceAccessExpressionAnalyzer());
         syntaxAnalyzer.addAnalyzer(new BracketsExpression.BracketsExpressionAnalyzer());

@@ -5,6 +5,7 @@ import axl.compiler.analysis.lexical.TokenType;
 import axl.compiler.analysis.lexical.utils.Frame;
 import axl.compiler.analysis.lexical.utils.TokenStream;
 import axl.compiler.analysis.syntax.ast.Node;
+import axl.compiler.analysis.syntax.ast.expression.Expression;
 import axl.compiler.analysis.syntax.utils.Analyzer;
 import axl.compiler.analysis.syntax.utils.LinkedList;
 import lombok.Getter;
@@ -57,11 +58,6 @@ public class DefaultSyntaxAnalyzer implements SyntaxAnalyzer {
             throw new IllegalArgumentException(); // TODO
 
         List<Node> nodes = new ArrayList<>();
-        Node node;
-
-        node = analyze(tokenStream, allowed);
-        if (node == null)
-            return nodes;
 
         while (tokenStream.hasNext()) {
             if (delimiter != null) {
@@ -71,7 +67,7 @@ public class DefaultSyntaxAnalyzer implements SyntaxAnalyzer {
                 tokenStream.next();
             }
 
-            node = analyze(tokenStream, allowed);
+            Node node = analyze(tokenStream, allowed);
             if (node == null)
                 return nodes;
 
@@ -82,8 +78,8 @@ public class DefaultSyntaxAnalyzer implements SyntaxAnalyzer {
     }
 
     @Override
-    public Node analyzeExpression(TokenStream tokenStream, LinkedList<Analyzer> without) {
-        Node node = null;
+    public Expression analyzeExpression(TokenStream tokenStream, LinkedList<Analyzer> without) {
+        Expression node = null;
         Frame frame;
 
         boolean flag = without != null;
@@ -103,6 +99,31 @@ public class DefaultSyntaxAnalyzer implements SyntaxAnalyzer {
         }
 
         return node;
+    }
+
+    @Override
+    public List<? extends Expression> analyzeExpression(TokenStream tokenStream, TokenType delimiter, LinkedList<Analyzer> without) {
+        if (delimiter != null && delimiter.getGroup() != TokenGroup.DELIMITER)
+            throw new IllegalArgumentException(); // TODO
+
+        List<Expression> expressions = new ArrayList<>();
+
+        while (tokenStream.hasNext()) {
+            if (delimiter != null) {
+                if (tokenStream.get().getType() != delimiter)
+                    return expressions;
+
+                tokenStream.next();
+            }
+
+            Expression expression = analyzeExpression(tokenStream, without);
+            if (expression == null)
+                return expressions;
+
+            expressions.add(expression);
+        }
+
+        return expressions;
     }
 
     @Override

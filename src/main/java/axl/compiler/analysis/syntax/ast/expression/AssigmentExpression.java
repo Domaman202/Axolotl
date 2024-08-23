@@ -22,8 +22,8 @@ public class AssigmentExpression extends Expression {
     @SubAnalyzer(target = BinaryExpression.class)
     public static class AssigmentExpressionAnalyzer extends ExpressionAnalyzer {
         @Override
-        public Node analyzeExpression(SyntaxAnalyzer syntaxAnalyzer, TokenStream tokenStream, LinkedList<Analyzer> without) {
-            Node leftNode = syntaxAnalyzer.analyzeExpression(tokenStream, new LinkedList<>(without, this));
+        public Expression analyzeExpression(SyntaxAnalyzer syntaxAnalyzer, TokenStream tokenStream, LinkedList<Analyzer> without) {
+            Expression leftNode = syntaxAnalyzer.analyzeExpression(tokenStream, new LinkedList<>(without, this));
             IToken token = tokenStream.get();
             if (token == null)
                 return leftNode;

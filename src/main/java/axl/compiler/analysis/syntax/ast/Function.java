@@ -5,7 +5,6 @@ import axl.compiler.analysis.lexical.TokenType;
 import axl.compiler.analysis.lexical.utils.TokenStream;
 import axl.compiler.analysis.syntax.SyntaxAnalyzer;
 import axl.compiler.analysis.syntax.ast.expression.Expression;
-import axl.compiler.analysis.syntax.ast.expression.Type;
 import axl.compiler.analysis.syntax.ast.statement.ReturnStatement;
 import axl.compiler.analysis.syntax.ast.statement.Statement;
 import axl.compiler.analysis.syntax.utils.Analyzer;

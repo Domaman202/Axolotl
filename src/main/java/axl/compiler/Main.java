@@ -4,6 +4,7 @@ import axl.compiler.analysis.lexical.DefaultTokenizer;
 import axl.compiler.analysis.lexical.IToken;
 import axl.compiler.analysis.lexical.Tokenizer;
 import axl.compiler.analysis.lexical.utils.DefaultTokenStream;
+import axl.compiler.analysis.lexical.utils.Frame;
 import axl.compiler.analysis.lexical.utils.TokenStream;
 import axl.compiler.analysis.syntax.SyntaxAnalyzer;
 import axl.compiler.analysis.syntax.SyntaxAnalyzerAgent;
@@ -28,6 +29,7 @@ public class Main {
 
         TokenStream stream = file.createTokenStream();
         SyntaxAnalyzer syntaxAnalyzer = SyntaxAnalyzerAgent.createSyntaxAnalyzer();
+        Frame frame = stream.createFrame();
         long point = System.currentTimeMillis();
         Node add = syntaxAnalyzer.analyze(stream);
         long time = ((int) (System.currentTimeMillis() - point));
@@ -36,8 +38,9 @@ public class Main {
 
         System.out.println((int) time + " ms");
 
-//        while (stream.hasNext())
-//            System.out.println(stream.next().getType());
+        stream.restoreFrame(frame);
+        while (stream.hasNext())
+            System.out.println(stream.next().getType());
     }
 
     public static String formatString(String input) {

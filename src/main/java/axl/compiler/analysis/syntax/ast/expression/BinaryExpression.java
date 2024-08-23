@@ -31,14 +31,19 @@ public class BinaryExpression extends Expression {
         }
 
         @Override
-        public Node analyzeExpression(SyntaxAnalyzer syntaxAnalyzer, TokenStream tokenStream, LinkedList<Analyzer> without) {
-            Node leftNode = syntaxAnalyzer.analyzeExpression(tokenStream, new LinkedList<>(without, this));
+        public Expression analyzeExpression(SyntaxAnalyzer syntaxAnalyzer, TokenStream tokenStream, LinkedList<Analyzer> without) {
+            Expression left = syntaxAnalyzer.analyzeExpression(tokenStream, new LinkedList<>(without, this));
+            if (left == null)
+                return null;
+
             IToken token = tokenStream.get();
             if (token == null || !tokenTypes.contains(token.getType()))
-                return leftNode;
+                return left;
             IToken operation = tokenStream.next();
-            Expression left = (Expression) leftNode;
-            Expression right = (Expression) syntaxAnalyzer.analyzeExpression(tokenStream, without);
+            Expression right = syntaxAnalyzer.analyzeExpression(tokenStream, without);
+            if (right == null)
+                return null;
+
             return new BinaryExpression(operation, left, right);
         }
     }
