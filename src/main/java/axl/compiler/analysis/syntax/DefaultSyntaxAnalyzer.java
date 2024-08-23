@@ -97,7 +97,7 @@ public class DefaultSyntaxAnalyzer implements SyntaxAnalyzer {
     }
 
     @Override
-    public List<? extends Expression> analyzeExpression(TokenStream tokenStream, TokenType delimiter, LinkedList<Analyzer> without) {
+    public List<Expression> analyzeExpression(TokenStream tokenStream, TokenType delimiter, LinkedList<Analyzer> without) {
         if (delimiter != null && delimiter.getGroup() != TokenGroup.DELIMITER)
             throw new IllegalArgumentException(); // TODO
 

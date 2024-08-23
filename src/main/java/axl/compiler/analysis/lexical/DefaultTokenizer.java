@@ -12,9 +12,9 @@ public class DefaultTokenizer implements Tokenizer, TokenizerUtils {
 
     private int offset;
 
-    private int line;
+    private int line = 1;
 
-    private int column;
+    private int column = 1;
 
     private DefaultTokenizerFrame last;
 

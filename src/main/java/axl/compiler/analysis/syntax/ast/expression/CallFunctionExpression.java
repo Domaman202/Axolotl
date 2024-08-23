@@ -1,7 +1,7 @@
 package axl.compiler.analysis.syntax.ast.expression;
 
+import axl.compiler.analysis.lexical.IToken;
 import axl.compiler.analysis.lexical.TokenType;
-import axl.compiler.analysis.lexical.utils.Frame;
 import axl.compiler.analysis.lexical.utils.TokenStream;
 import axl.compiler.analysis.lexical.utils.TokenStreamUtils;
 import axl.compiler.analysis.syntax.SyntaxAnalyzer;
@@ -28,20 +28,29 @@ public class CallFunctionExpression extends Expression {
             Expression left = syntaxAnalyzer.analyzeExpression(tokenStream, new LinkedList<>(without, this));
             if (left == null || TokenStreamUtils.nextTokenTypeNot(tokenStream, TokenType.LEFT_PARENT))
                 return null;
+
             List<Expression> args = new ArrayList<>();
-            if (tokenStream.get().getType() != TokenType.RIGHT_PARENT) {
+            if (tokenStream.get().getType() == TokenType.RIGHT_PARENT)
+                tokenStream.next();
+            else {
                 while (true) {
                     Expression expr = syntaxAnalyzer.analyzeExpression(tokenStream, null);
-                    if (expr == null)
-                        break;
+                    if (expr == null) {
+                        throw new RuntimeException(); // TODO
+                    }
+
                     args.add(expr);
-                    Frame frame = tokenStream.createFrame();
-                    TokenType type = tokenStream.next().getType();
-                    if (type == TokenType.COMMA)
+
+                    IToken token = tokenStream.next();
+                    if (token == null)
+                        throw new RuntimeException(); // TODO
+
+                    if (token.getType() == TokenType.COMMA)
                         continue;
-                    if (type == TokenType.RIGHT_PARENT)
+                    else if (token.getType() == TokenType.RIGHT_PARENT)
                         break;
-                    tokenStream.restoreFrame(frame);
+                    else
+                        throw new RuntimeException("Пропущена запятая или закрывающая скобка"); // TODO
                 }
             }
             return new CallFunctionExpression(left, args);
@@ -50,9 +59,9 @@ public class CallFunctionExpression extends Expression {
 
     @Override
     public String toString() {
-        return "CallFunction{"+
-                "function="+function+
-                ",args="+args+
+        return "CallFunction{" +
+                "function=" + function +
+                ",args=" + args +
                 '}';
     }
 }
