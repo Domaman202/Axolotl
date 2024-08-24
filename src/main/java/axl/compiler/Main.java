@@ -1,9 +1,5 @@
 package axl.compiler;
 
-import axl.compiler.analysis.lexical.DefaultTokenizer;
-import axl.compiler.analysis.lexical.IToken;
-import axl.compiler.analysis.lexical.Tokenizer;
-import axl.compiler.analysis.lexical.utils.DefaultTokenStream;
 import axl.compiler.analysis.lexical.utils.Frame;
 import axl.compiler.analysis.lexical.utils.TokenStream;
 import axl.compiler.analysis.syntax.SyntaxAnalyzer;
@@ -13,8 +9,6 @@ import lombok.SneakyThrows;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Main {
 
@@ -49,14 +43,17 @@ public class Main {
         int indentLevel = 0;
 
         for (char c : input.toCharArray()) {
-            if (c == '{') {
-                formatted.append(" ").append(c).append("\n");
-                formatted.append(" ".repeat(++indentLevel*4));
-            } else if (c == '}') {
-                formatted.append("\n").append(" ".repeat(--indentLevel*4));
+            if (c == '{' || c == '[') {
+                if (c == '{')
+                    formatted.append(" ");
+
+                formatted.append(c).append("\n");
+                formatted.append(" ".repeat(++indentLevel * 4));
+            } else if (c == '}' || c == ']') {
+                formatted.append("\n").append(" ".repeat(--indentLevel * 4));
                 formatted.append(c);
             } else if (c == ',') {
-                formatted.append(c).append('\n').append(" ".repeat(indentLevel*4));
+                formatted.append(c).append('\n').append(" ".repeat(indentLevel * 4));
             } else {
                 formatted.append(c);
             }

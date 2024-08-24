@@ -19,7 +19,7 @@ public interface SyntaxAnalyzer {
 
     Expression analyzeExpression(TokenStream tokenStream, LinkedList<Analyzer> without);
 
-    List<? extends Expression> analyzeExpression(TokenStream tokenStream, TokenType delimiter, LinkedList<Analyzer> without);
+    List<Expression> analyzeExpression(TokenStream tokenStream, TokenType delimiter, LinkedList<Analyzer> without);
 
     void addAnalyzer(Analyzer analyzer);
 
